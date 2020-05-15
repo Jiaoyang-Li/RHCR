@@ -1,0 +1,277 @@
+#include "BeeSystem.h"
+#include <boost/tokenizer.hpp>
+
+
+BeeSystem::BeeSystem(const BeeGraph& G, MAPFSolver& solver) : BasicSystem(G, solver), G(G) {}
+
+
+BeeSystem::~BeeSystem()
+{
+}
+
+bool BeeSystem::load_task_assignments(string fname)
+{
+	clock_t t = clock();
+	using namespace boost;
+	string line;
+	std::ifstream myfile((fname).c_str());
+	if (!myfile.is_open())
+	{
+		std::cout << "Task file " << fname << " does not exist. " << std::endl;
+		return false;
+	}
+	char_separator<char> sep(" ");
+	int id, i;
+	char temp;
+	task_sequences.resize(G.initial_locations.size());
+	while (getline(myfile, line)) 
+	{
+		std::istringstream iss(line);
+		iss >> i >> temp;
+		if (i == 0)
+		{
+			task_sequences.emplace_back();
+			while (iss >> id)
+			{
+				task_sequences.back().push_back(G.flowers[id - 1]);
+			}
+			task_sequences.back().push_back(G.entrance);
+		}
+		else
+		{
+			while (iss >> id)
+			{
+				task_sequences[i - 1].push_back(G.flowers[id - 1]);
+			}
+			task_sequences[i - 1].push_back(G.entrance);
+		}
+		
+	}
+	myfile.close();
+	loading_time = (clock() - t) * 1.0 / CLOCKS_PER_SEC;
+	return true;
+}
+
+
+void BeeSystem::initialize()
+{
+	initialize_solvers();
+
+	starts.resize(num_of_drives);
+	goal_locations.resize(num_of_drives);
+	paths.resize(num_of_drives);
+	finished_tasks.resize(num_of_drives);
+	timestep = 0;
+	initialize_start_locations();
+}
+
+void BeeSystem::initialize_start_locations()
+{
+	for (int k = 0; k < (int)G.initial_locations.size(); k++)
+	{
+		int orientation = -1;
+		if (consider_rotation)
+		{
+			orientation = rand() % 4;
+		}
+		int loc = G.initial_locations[k];
+		starts[k] = State(loc, 0, orientation);
+		paths[k].emplace_back(starts[k]);
+		finished_tasks[k].emplace_back(loc, 0);
+	}
+	for (int k = (int)G.initial_locations.size(); k < num_of_drives; k++)
+	{
+		int orientation = -1;
+		if (consider_rotation)
+		{
+			orientation = rand() % 4;
+		}
+		int loc = G.entrance;
+		starts[k] = State(loc, 0, orientation);
+		paths[k].emplace_back(starts[k]);
+		finished_tasks[k].emplace_back(loc, 0);
+	}
+}
+
+
+void BeeSystem::update_goal_locations()
+{
+	for (int k = 0; k < num_of_drives; k++)
+	{
+		int curr = paths[k][timestep].location; // current location
+
+		int goal; // The last goal location
+		if (goal_locations[k].empty())
+		{
+			goal = curr;
+		}
+		else
+		{
+			goal = goal_locations[k].back();
+		}
+		double min_timesteps = G.get_Manhattan_distance(curr, goal); // cannot use h values, because graph edges may have weights  // G.heuristics.at(goal)[curr];
+		while (min_timesteps <= simulation_window)
+			// The agent might finish its tasks during the next planning horizon
+		{
+			// assign a new task
+			if (task_sequences.size() <= k) // no more task sequences for this agent
+				break;
+			else if (task_sequences[k].empty()) // the current path has been finished. Pick the next task sequence
+			{
+				if (task_sequences.size() <= num_of_drives) // no more task sequences for this agent
+					break;
+				task_sequences[k] = task_sequences[num_of_drives];
+				task_sequences.erase(task_sequences.begin() + num_of_drives);
+			}
+			int next = task_sequences[k].front();
+			task_sequences[k].pop_front();
+			goal_locations[k].emplace_back(next);
+			min_timesteps += G.get_Manhattan_distance(next, goal); // G.heuristics.at(next)[goal];
+			goal = next;
+		}
+		if (goal_locations[k].empty())
+		{
+			goal_locations[k].push_back(G.entrance);
+		}
+	}
+}
+
+
+void BeeSystem::simulate()
+{
+	if (screen > 0)
+		std::cout << "*** Simulating " << seed << " ***" << std::endl;
+	this->simulation_time = G.max_timestep;
+	this->num_of_drives = G.num_of_bees;
+	initialize();
+
+	for (; timestep < simulation_time; timestep += simulation_window)
+	{
+		if (screen > 0)
+			std::cout << "Timestep " << timestep << std::endl;
+
+		update_start_locations();
+		update_goal_locations();
+		solve();
+
+		// move drives
+		auto new_finished_tasks = move();
+		int old = num_of_tasks;
+		// update tasks
+		for (auto task : new_finished_tasks)
+		{
+			int id, loc, t;
+			std::tie(id, loc, t) = task;
+			if (loc != G.entrance || finished_tasks[id].back().first != G.entrance)
+			{
+				finished_tasks[id].emplace_back(loc, t);
+				if (loc != G.entrance)
+					num_of_tasks++;
+			}
+		}
+		if (screen > 0)
+		{
+			std::cout << num_of_tasks - old << " tasks just finished" << std::endl;
+			std::cout << num_of_tasks << " tasks finished in total" << std::endl;
+			std::cout << task_sequences.size() << " paths remain" << std::endl;
+		}
+
+		bool stop = true;
+		for (const auto goals : goal_locations)
+		{
+			if (!goals.empty())
+			{
+				stop = false;
+				break;
+			}
+		}
+		if (stop)
+		{
+			for (const auto tasks : task_sequences)
+			{
+				if (!tasks.empty())
+				{
+					stop = false;
+					break;
+				}
+			}
+		}
+		if (stop)
+		{
+			timestep += simulation_window;
+			break;
+		}
+	}
+
+	update_start_locations();
+	if (screen)
+	{
+		std::cout << std::endl << "Done!" << std::endl;
+		cout << num_of_tasks << " tasks have been completed" << endl;
+	}
+	save_results();
+}
+
+
+int BeeSystem::get_num_of_remaining_tasks() const
+{
+	int remaining_tasks = 0;
+	for (const auto& tasks : task_sequences)
+	{
+		remaining_tasks += (int) tasks.size();
+	}
+	return remaining_tasks;
+}
+
+int BeeSystem::get_makespan()
+{
+	while (paths[0].size() > 1)
+	{
+		int T = (int)paths[0].size() - 1;
+		for (const auto& path : paths)
+		{
+			if (path[T - 1].location != G.entrance)
+			{
+				return T;
+			}
+		}
+		for (int i = 0; i < int(paths.size()); i++)
+		{
+			paths[i].pop_back();
+		}
+	}
+	return -1; // should never happen
+}
+
+int BeeSystem::get_flowtime() const
+{
+	int flowtime = 0;
+	for (const auto& path : paths)
+	{
+		for (int t = (int)path.size() - 1; t > 0; t--)
+		{
+			if (path[t - 1].location != G.entrance)
+			{
+				flowtime += t;
+				break;
+			}
+		}
+	}
+	return flowtime;
+}
+
+int BeeSystem::get_flowtime_lowerbound() const
+{
+	int rst = 0;
+	for (int k = 0; k < num_of_drives; k++)
+	{
+		int prev = finished_tasks[k].front().first;
+		for (auto task : finished_tasks[k])
+		{
+			if (task.second != 0)
+				rst += G.heuristics.at(task.first)[prev];
+			prev = task.first;
+		}
+	}
+	return rst / G.move_cost;
+}
