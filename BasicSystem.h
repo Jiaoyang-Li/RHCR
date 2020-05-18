@@ -53,7 +53,7 @@ public:
 
     // used for MAPF instance
     vector<State> starts;
-    vector< vector<int> > goal_locations;
+    vector< vector<pair<int, int> > > goal_locations;
 	// unordered_set<int> held_endpoints;
     int timestep;
 
@@ -82,7 +82,7 @@ public:
 
 protected:
 	bool solve_by_WHCA(vector<Path>& planned_paths,
-		const vector<State>& new_starts, const vector< vector<int> >& new_goal_locations);
+		const vector<State>& new_starts, const vector< vector<pair<int, int> > >& new_goal_locations);
 
 private:
 	const BasicGraph& G;

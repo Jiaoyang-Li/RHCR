@@ -23,7 +23,7 @@ public:
     LRAStar(const BasicGraph& G, SingleAgentSolver& path_planner);
 
 	bool run(const vector<State>& starts,
-		const vector< vector<int> >& goal_locations,
+		const vector< vector<pair<int, int> > >& goal_locations,
 		int time_limit);
 	string get_name() const {return "LRA"; }
 	void clear() {}
@@ -40,6 +40,6 @@ private:
                       vector<list<pair<int, int> >::const_iterator >& traj_pointers);
     void wait_command(int agent, int timestep, vector<int>& path_pointers);
 
-	Path find_shortest_path(const State& start, const vector<int>& goal_location);
+	Path find_shortest_path(const State& start, const vector<pair<int, int> >& goal_location);
 };
 

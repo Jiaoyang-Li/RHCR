@@ -61,7 +61,7 @@ void KivaSystem::initialize_goal_locations()
 	for (int k = 0; k < num_of_drives; k++)
 	{
 		int goal = G.endpoints[rand() % (int)G.endpoints.size()];
-		goal_locations[k].emplace_back(goal);
+		goal_locations[k].emplace_back(goal, 0);
 	}
 }
 
@@ -82,18 +82,19 @@ void KivaSystem::update_goal_locations()
 				{
 					next = G.endpoints[rand() % (int)G.endpoints.size()];
 				}
-				goal_locations[k].emplace_back(next);
+				goal_locations[k].emplace_back(next, 0);
 				held_endpoints.insert(next);
 			}
-			if (paths[k].back().location == goal_locations[k].back()) // agent already has paths to its goal location
+			if (paths[k].back().location == goal_locations[k].back().first &&  // agent already has paths to its goal location
+				paths[k].back().timestep >= goal_locations[k].back().second) // after its relase time
 			{
 				int agent = k;
-				int loc = goal_locations[k].back();
+				int loc = goal_locations[k].back().first;
 				auto it = held_locations.find(loc);
 				while (it != held_locations.end()) // its start location has been held by another agent
 				{
 					int removed_agent = it->second;
-					if (goal_locations[removed_agent].back() != loc)
+					if (goal_locations[removed_agent].back().first != loc)
 						cout << "BUG" << endl;
 					new_agents.remove(removed_agent); // another agent cannot move to its new goal location
 					cout << "Agent " << removed_agent << " has to wait for agent " << agent << " because of location " << loc << endl;
@@ -106,9 +107,9 @@ void KivaSystem::update_goal_locations()
 			}
 			else // agent does not have paths to its goal location yet
 			{
-				if (held_locations.find(goal_locations[k].back()) == held_locations.end()) // if the goal location has not been held by other agents
+				if (held_locations.find(goal_locations[k].back().first) == held_locations.end()) // if the goal location has not been held by other agents
 				{
-					held_locations[goal_locations[k].back()] = k; // hold this goal location
+					held_locations[goal_locations[k].back().first] = k; // hold this goal location
 					new_agents.emplace_back(k); // replan paths for this agent later
 					continue;
 				}
@@ -116,13 +117,13 @@ void KivaSystem::update_goal_locations()
 				// so this agent has to keep holding its start location instead
 				int agent = k;
 				int loc = curr;
-				cout << "Agent " << agent << " has to wait for agent " << held_locations[goal_locations[k].back()] << " because of location " <<
-					goal_locations[k].back() << endl;
+				cout << "Agent " << agent << " has to wait for agent " << held_locations[goal_locations[k].back().first] << " because of location " <<
+					goal_locations[k].back().first << endl;
 				auto it = held_locations.find(loc);
 				while (it != held_locations.end()) // its start location has been held by another agent
 				{
 					int removed_agent = it->second;
-					if (goal_locations[removed_agent].back() != loc)
+					if (goal_locations[removed_agent].back().first != loc)
 						cout << "BUG" << endl;
 					new_agents.remove(removed_agent); // another agent cannot move to its new goal location
 					cout << "Agent " << removed_agent << " has to wait for agent " << agent << " because of location " << loc << endl;
@@ -144,7 +145,7 @@ void KivaSystem::update_goal_locations()
 			{
 				if (goal_locations[k].empty())
 				{
-					goal_locations[k].emplace_back(G.agent_home_locations[k]);
+					goal_locations[k].emplace_back(G.agent_home_locations[k], 0);
 				}
 				if (goal_locations[k].size() == 1)
 				{
@@ -152,32 +153,32 @@ void KivaSystem::update_goal_locations()
 					do {
 						next = G.endpoints[rand() % (int)G.endpoints.size()];
 					} while (next == curr);
-					goal_locations[k].emplace(goal_locations[k].begin(), next);
+					goal_locations[k].emplace(goal_locations[k].begin(), next, 0);
 					new_agents.emplace_back(k);
 				}
 			}
 			else
 			{
-				int goal; // The last goal location
+				pair<int, int> goal; // The last goal location
 				if (goal_locations[k].empty())
 				{
-					goal = curr;
+					goal = make_pair(curr, 0);
 				}
 				else
 				{
 					goal = goal_locations[k].back();
 				}
-				double min_timesteps = G.get_Manhattan_distance(goal, curr); // G.heuristics.at(goal)[curr];
+				double min_timesteps = G.get_Manhattan_distance(goal.first, curr); // G.heuristics.at(goal)[curr];
 				while (min_timesteps <= simulation_window)
 					// The agent might finish its tasks during the next planning horizon
 				{
 					// assign a new task
-					int next;
-					if (G.types[goal] == "Endpoint")
+					pair<int, int> next;
+					if (G.types[goal.first] == "Endpoint")
 					{
 						do
 						{
-							next = G.endpoints[rand() % (int)G.endpoints.size()];
+							next = make_pair(G.endpoints[rand() % (int)G.endpoints.size()], 0);
 						} while (next == goal);
 					}
 					else
@@ -187,7 +188,7 @@ void KivaSystem::update_goal_locations()
 						exit(-1);
 					}
 					goal_locations[k].emplace_back(next);
-					min_timesteps += G.get_Manhattan_distance(next, goal); // G.heuristics.at(next)[goal];
+					min_timesteps += G.get_Manhattan_distance(next.first, goal.first); // G.heuristics.at(next)[goal];
 					goal = next;
 				}
 			}

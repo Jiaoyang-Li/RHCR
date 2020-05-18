@@ -515,7 +515,7 @@ ECBSNode* ECBS::pop_node()
 
 
 bool ECBS::run(const std::vector<State>& starts,
-                     const std::vector< vector<int> >& goal_locations,
+                     const std::vector< vector<pair<int, int> > >& goal_locations,
                      int time_limit)
 {
     clear();

@@ -17,7 +17,6 @@ bool BeeSystem::load_task_assignments(string fname)
 	std::ifstream myfile((fname).c_str());
 	if (!myfile.is_open())
 	{
-		std::cout << "Task file " << fname << " does not exist. " << std::endl;
 		return false;
 	}
 	char_separator<char> sep(" ");
@@ -33,17 +32,17 @@ bool BeeSystem::load_task_assignments(string fname)
 			task_sequences.emplace_back();
 			while (iss >> id)
 			{
-				task_sequences.back().push_back(G.flowers[id - 1]);
+				task_sequences.back().emplace_back(G.flowers[id - 1], G.flower_time_windows[id - 1].first);
 			}
-			task_sequences.back().push_back(G.entrance);
+			task_sequences.back().emplace_back(G.entrance, 0);
 		}
 		else
 		{
 			while (iss >> id)
 			{
-				task_sequences[i - 1].push_back(G.flowers[id - 1]);
+				task_sequences[i - 1].emplace_back(G.flowers[id - 1], G.flower_time_windows[id - 1].first);
 			}
-			task_sequences[i - 1].push_back(G.entrance);
+			task_sequences[i - 1].emplace_back(G.entrance, 0);
 		}
 		
 	}
@@ -98,9 +97,9 @@ void BeeSystem::update_goal_locations()
 {
 	for (int k = 0; k < num_of_drives; k++)
 	{
-		int curr = paths[k][timestep].location; // current location
+		pair<int, int> curr(paths[k][timestep].location, timestep); // current location
 
-		int goal; // The last goal location
+		pair<int, int> goal; // The last goal location
 		if (goal_locations[k].empty())
 		{
 			goal = curr;
@@ -109,7 +108,8 @@ void BeeSystem::update_goal_locations()
 		{
 			goal = goal_locations[k].back();
 		}
-		double min_timesteps = G.get_Manhattan_distance(curr, goal); // cannot use h values, because graph edges may have weights  // G.heuristics.at(goal)[curr];
+		int min_timesteps = max(G.get_Manhattan_distance(curr.first, goal.first), // cannot use h values, because graph edges may have weights
+			goal.second - timestep); 
 		while (min_timesteps <= simulation_window)
 			// The agent might finish its tasks during the next planning horizon
 		{
@@ -123,15 +123,16 @@ void BeeSystem::update_goal_locations()
 				task_sequences[k] = task_sequences[num_of_drives];
 				task_sequences.erase(task_sequences.begin() + num_of_drives);
 			}
-			int next = task_sequences[k].front();
+			auto next = task_sequences[k].front();
 			task_sequences[k].pop_front();
 			goal_locations[k].emplace_back(next);
-			min_timesteps += G.get_Manhattan_distance(next, goal); // G.heuristics.at(next)[goal];
+			min_timesteps += G.get_Manhattan_distance(next.first, goal.first); 
+			min_timesteps = max(min_timesteps, goal.second - timestep);
 			goal = next;
 		}
 		if (goal_locations[k].empty())
 		{
-			goal_locations[k].push_back(G.entrance);
+			goal_locations[k].emplace_back(G.entrance, 0);
 		}
 	}
 }
@@ -212,6 +213,24 @@ void BeeSystem::simulate()
 	save_results();
 }
 
+int BeeSystem::get_num_of_missed_tasks() const
+{
+	int missed_tasks = 0;
+	for (auto finished_task : finished_tasks)
+	{
+		for (auto task : finished_task)
+		{
+			for (int i = 0; i < (int)G.flowers.size(); i++)
+			{
+				if (task.first == G.flowers[i] && task.second > G.flower_time_windows[i].second)
+				{
+					missed_tasks++;
+					break;
+				}
+			}
+		}
+	}
+}
 
 int BeeSystem::get_num_of_remaining_tasks() const
 {
@@ -274,4 +293,44 @@ int BeeSystem::get_flowtime_lowerbound() const
 		}
 	}
 	return rst / G.move_cost;
+}
+
+int BeeSystem::get_objective() const
+{
+	int path_cost = 0;
+	for (auto path : paths)
+	{
+		for (int t = 0; t < (int)path.size() - 1; t++)
+		{
+			path_cost += G.get_weight(path[t].location, path[t].location);
+		}
+	}
+	int task_cost = 0;
+	for (auto finished_task : finished_tasks)
+	{
+		for (auto task : finished_task)
+		{
+			for (int i = 0; i < (int)G.flowers.size(); i++)
+			{
+				if (task.first == G.flowers[i] && task.second <= G.flower_time_windows[i].second)
+				{
+					task_cost += G.flower_costs[i];
+					break;
+				}
+			}
+		}
+	}
+	return path_cost + task_cost;
+}
+
+void solve_VRP_by_LKH3(string fname)
+{
+	clock_t t = clock();
+	std::size_t pos = fname.rfind('.');      // position of the file extension
+	string input_file = fname.substr(0, pos);     // get the name without extension
+	std::ofstream output;
+	output.open(input_file + "_LKH_input.txt", std::ios::out);
+	output << "NAME: BEE" << endl <<
+						"TYPE: ";
+	output.close();
 }

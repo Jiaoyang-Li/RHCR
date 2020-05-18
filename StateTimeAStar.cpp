@@ -37,7 +37,8 @@ list<pair<int, int> > StateTimeAStar::updateTrajectory(const StateTimeAStarNode*
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // return true if a path found (and updates vector<int> path) or false if no path exists
 // after max_timestep, switch from time-space A* search to normal A* search
-Path StateTimeAStar::run(const BasicGraph& G, const State& start, const vector<int>& goal_location, ReservationTable& rt)
+Path StateTimeAStar::run(const BasicGraph& G, const State& start, 
+	const vector<pair<int, int> >& goal_location, ReservationTable& rt)
 {
     num_expanded = 0;
     num_generated = 0;
@@ -66,7 +67,7 @@ Path StateTimeAStar::run(const BasicGraph& G, const State& start, const vector<i
 
 	int earliest_holding_time = 0;
 	if (hold_endpoints)
-		earliest_holding_time = rt.getHoldingTimeFromCT(goal_location.back());
+		earliest_holding_time = rt.getHoldingTimeFromCT(goal_location.back().first);
 
     while (!focal_list.empty())
     {
@@ -76,7 +77,8 @@ Path StateTimeAStar::run(const BasicGraph& G, const State& start, const vector<i
         num_expanded++;
 		
 		// update goal id
-        if (curr->state.location == goal_location[curr->goal_id] && 
+        if (curr->state.location == goal_location[curr->goal_id].first && 
+			curr->state.timestep >= goal_location[curr->goal_id].second &&
 			!(curr->goal_id == (int)goal_location.size() - 1 &&
 				earliest_holding_time > curr->state.timestep))
 			curr->goal_id++;
@@ -206,7 +208,7 @@ Path StateTimeAStar::run(const BasicGraph& G, const State& start, const vector<i
 
 void StateTimeAStar::findTrajectory(const BasicGraph& G,
                      const State& start,
-                     const vector<int>& goal_locations,
+                     const vector<pair<int, int> >& goal_locations,
                      const unordered_map<int, double>& travel_times,
                      list<pair<int, int> >& trajectory)
 {
@@ -232,7 +234,8 @@ void StateTimeAStar::findTrajectory(const BasicGraph& G,
         num_expanded++;
 
         // check if the popped node is a goal
-        if (curr->state.location == goal_locations[curr->goal_id])
+        if (curr->state.location == goal_locations[curr->goal_id].first &&
+			curr->state.timestep >= goal_locations[curr->goal_id].second) // reach the goal location after its release time
         {
             curr->goal_id++;
             if (curr->goal_id == (int) goal_locations.size())

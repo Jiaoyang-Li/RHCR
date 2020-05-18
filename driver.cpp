@@ -205,14 +205,27 @@ int main(int argc, char** argv)
 		G.preprocessing(vm["task"].as<std::string>(), system.consider_rotation);
 		system.load_task_assignments(vm["task"].as<std::string>());
 		system.simulate();
-		cout << "Overall runtime:			" << (clock() - start_time) * 1.0 / CLOCKS_PER_SEC << " seconds." << endl;
-		cout << "	Reading from file:		" << G.loading_time + system.loading_time << " seconds." << endl;
-		cout << "	Preprocessing:			" << G.preprocessing_time << " seconds." << endl;
-		cout << "	Writing to file:		" << system.saving_time << " seconds." << endl;
+		double runtime = (clock() - start_time) * 1.0 / CLOCKS_PER_SEC;
+		cout << "Overall runtime:			" << runtime << " seconds." << endl;
+		// cout << "	Reading from file:		" << G.loading_time + system.loading_time << " seconds." << endl;
+		// cout << "	Preprocessing:			" << G.preprocessing_time << " seconds." << endl;
+		// cout << "	Writing to file:		" << system.saving_time << " seconds." << endl;
 		cout << "Makespan:		" << system.get_makespan() << " timesteps." << endl;
 		cout << "Flowtime:		" << system.get_flowtime() << " timesteps." << endl;
 		cout << "Flowtime lowerbound:	" << system.get_flowtime_lowerbound() << " timesteps." << endl;
+		cout << "Missed tasks: " << system.get_num_of_missed_tasks() << endl;
 		cout << "Remaining tasks: " << system.get_num_of_remaining_tasks() << endl;
+		cout << "Objective: " << system.get_objective() << endl;
+		std::ofstream output;
+		output.open(vm["output"].as<std::string>() + "/MAPF_results.txt", std::ios::out);
+		output << "Overall runtime: " << runtime << " seconds." << endl;;
+		output << "Makespan: " << system.get_makespan() << " timesteps." << endl;
+		output << "Flowtime: " << system.get_flowtime() << " timesteps." << endl;
+		output << "Flowtime lowerbound: " << system.get_flowtime_lowerbound() << " timesteps." << endl;
+		output << "Missed tasks: " << system.get_num_of_missed_tasks() << endl;
+		output << "Remaining tasks: " << system.get_num_of_remaining_tasks() << endl;
+		output << "Objective: " << system.get_objective() << endl;
+		output.close();
         return 0;
 	}
 	else

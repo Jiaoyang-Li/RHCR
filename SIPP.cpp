@@ -55,7 +55,7 @@ Path SIPP::updatePath(const BasicGraph& G, const SIPPNode* goal)
 // return true if a path found (and updates vector<int> path) or false if no path exists
 // after max_timestep, switch from time-space A* search to normal A* search
 Path SIPP::run(const BasicGraph& G, const State& start,
-               const vector<int>& goal_location,
+               const vector<pair<int, int> >& goal_location,
                ReservationTable& rt)
 {
     num_expanded = 0;
@@ -98,7 +98,7 @@ Path SIPP::run(const BasicGraph& G, const State& start,
     }
 	int earliest_holding_time = 0;
 	if (hold_endpoints)
-		earliest_holding_time = rt.getHoldingTimeFromSIT(goal_location.back());
+		earliest_holding_time = rt.getHoldingTimeFromSIT(goal_location.back().first);
     while (!focal_list.empty())
     {
         SIPPNode* curr = focal_list.top(); focal_list.pop();
@@ -107,7 +107,8 @@ Path SIPP::run(const BasicGraph& G, const State& start,
         num_expanded++;
 
          // update goal id
-        if (curr->state.location == goal_location[curr->goal_id])
+        if (curr->state.location == goal_location[curr->goal_id].first &&
+			curr->state.timestep >= goal_location[curr->goal_id].second) // reach the goal location after its release time
         {
             curr->goal_id++;
 			if (curr->goal_id == (int)goal_location.size() &&

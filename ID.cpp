@@ -2,7 +2,7 @@
 
 
 bool ID::run(const vector<State>& starts,
-	const vector< vector<int> >& goal_locations,
+	const vector< vector<pair<int, int> > >& goal_locations,
 	int time_limit)
 {
     this->starts = starts;
@@ -34,7 +34,7 @@ bool ID::run(const vector<State>& starts,
 bool ID::plan_paths_for_group(int group_id)
 {
 	vector<State> curr_starts;
-	vector< vector<int> > curr_goal_locations;
+	vector< vector<pair<int, int> > > curr_goal_locations;
 	vector<int> curr_agents;
 	for (int i = 0; i < num_of_agents; i++)
 	{

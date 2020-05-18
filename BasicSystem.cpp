@@ -170,7 +170,7 @@ bool BasicSystem::load_locations()
         finished_tasks[k].push_back(std::make_pair(start_loc, 0));
         // goals
         int goal = atoi((*beg).c_str());
-        goal_locations[k].emplace_back(goal);
+        goal_locations[k].emplace_back(goal, 0);
     }
     myfile.close();
 	return true;
@@ -230,7 +230,8 @@ void BasicSystem::update_initial_paths(vector<Path>& initial_paths) const
         int j = (int)paths[k].size() - 1;
         while (i >= 0 && j >= 0)
         {
-            while (j >= 0 && paths[k][j].location != goal_locations[k][i])
+            while (j >= 0 && paths[k][j].location != goal_locations[k][i].first &&
+			paths[k][j].timestep >= goal_locations[k][i].second)
                 j--;
             i--;
         }
@@ -358,7 +359,9 @@ list<tuple<int, int, int>> BasicSystem::move()
             }*/
 
             // remove goals if necessary
-            if ((!hold_endpoints || paths[k].size() == t + 1) && !goal_locations[k].empty() && curr.location == goal_locations[k].front()) // the agent finish its current task
+            if ((!hold_endpoints || paths[k].size() == t + 1) && !goal_locations[k].empty() && 
+				curr.location == goal_locations[k].front().first &&
+				curr.timestep >= goal_locations[k].front().second) // the agent finish its current task
             {
                 goal_locations[k].erase(goal_locations[k].begin());
 				finished_tasks.emplace_back(k, curr.location, t);
@@ -490,7 +493,7 @@ void BasicSystem::save_results()
         }
         for (auto goal : goal_locations[k]) // tasks that have not been finished yet
         {
-            output << goal << ",-1,;";
+            output << goal.first << ",-1,;";
         }
         output << std::endl;
     }
@@ -600,7 +603,7 @@ void BasicSystem::solve()
 		 if (hold_endpoints || useDummyPaths)
 		 {
 			 vector<State> new_starts;
-			 vector< vector<int> > new_goal_locations;
+			 vector< vector<pair<int, int> > > new_goal_locations;
 			 for (int i : new_agents)
 			 {
 				 new_starts.emplace_back(starts[i]);
@@ -684,7 +687,7 @@ void BasicSystem::solve()
 }
 
 bool BasicSystem::solve_by_WHCA(vector<Path>& planned_paths,
-	const vector<State>& new_starts, const vector< vector<int> >& new_goal_locations)
+	const vector<State>& new_starts, const vector< vector<pair<int, int> > >& new_goal_locations)
 {
 	WHCAStar whca(G, solver.path_planner);
 	whca.initial_rt.hold_endpoints = true;
@@ -792,7 +795,7 @@ bool BasicSystem::load_records()
 			}
 			else
 			{
-				goal_locations[k].emplace_back(loc);
+				goal_locations[k].emplace_back(loc, 0);
 			}
 		}
 	}

@@ -11,7 +11,7 @@ public:
 		MAPFSolver(G, path_planner), solver(mapf_solver) {}
 
 	bool run(const vector<State>& starts,
-		const vector< vector<int> >& goal_locations,
+		const vector< vector<pair<int, int> > >& goal_locations,
 		int time_limit);
 	void clear() { solution.clear(); }
 	void save_results(const string &fileName, const string &instanceName) const;

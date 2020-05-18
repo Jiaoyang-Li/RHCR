@@ -61,7 +61,7 @@ void SortingSystem::initialize_goal_locations()
 		{
 			goal = assign_eject_station();
 		}
-		goal_locations[k].emplace_back(goal);
+		goal_locations[k].emplace_back(goal, 0);
     }
 }
 
@@ -70,9 +70,9 @@ void SortingSystem::update_goal_locations()
 {
 	for (int k = 0; k < num_of_drives; k++)
 	{
-		int curr = paths[k][timestep].location; // current location
+		pair<int, int> curr(paths[k][timestep].location, timestep); // current location
 
-		int goal; // The last goal location
+		pair<int, int> goal; // The last goal location
 		if (goal_locations[k].empty())
 		{
 			goal = curr;
@@ -81,30 +81,32 @@ void SortingSystem::update_goal_locations()
 		{
 			goal = goal_locations[k].back();
 		}
-		double min_timesteps = G.get_Manhattan_distance(curr, goal); // cannot use h values, because graph edges may have weights  // G.heuristics.at(goal)[curr];
+		int min_timesteps = G.get_Manhattan_distance(curr.first, goal.first); // cannot use h values, because graph edges may have weights  // G.heuristics.at(goal)[curr];
+		min_timesteps = max(min_timesteps, goal.second);
 		while (min_timesteps <= simulation_window)
 			// The agent might finish its tasks during the next planning horizon
 		{
 			// assign a new task
 			int next;
-			if (G.types[goal] == "Induct")
+			if (G.types[goal.first] == "Induct")
 			{
 				next = assign_eject_station();
 			}
-			else if (G.types[goal] == "Eject")
+			else if (G.types[goal.first] == "Eject")
 			{
-				next = assign_induct_station(curr);
+				next = assign_induct_station(curr.first);
 				drives_in_induct_stations[next]++; // the drive will go to the next induct station
 			}
 			else
 			{
 				std::cout << "ERROR in update_goal_function()" << std::endl;
-				std::cout << "The fiducial type should not be " << G.types[curr] << std::endl;
+				std::cout << "The fiducial type should not be " << G.types[curr.first] << std::endl;
 				exit(-1);
 			}
-			goal_locations[k].emplace_back(next);
-			min_timesteps += G.get_Manhattan_distance(next, goal); // G.heuristics.at(next)[goal];
-			goal = next;
+			goal_locations[k].emplace_back(next, 0);
+			min_timesteps += G.get_Manhattan_distance(next, goal.first); // G.heuristics.at(next)[goal];
+			min_timesteps = max(min_timesteps, goal.second);
+			goal = make_pair(next, 0);
 		}
 	}
 }
@@ -215,7 +217,7 @@ void SortingSystem::initialize()
 	for (int k = 0; k < num_of_drives; k++)
 	{
 		// goals
-		int goal = goal_locations[k].back();
+		int goal = goal_locations[k].back().first;
 		if (G.types[goal] == "Induct")
 		{
 			drives_in_induct_stations[goal]++;

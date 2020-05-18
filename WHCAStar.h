@@ -20,7 +20,7 @@ public:
 
     // Runs the algorithm until the problem is solved or time is exhausted
     bool run(const vector<State>& starts,
-             const vector< vector<int> >& goal_locations,
+             const vector< vector<pair<int, int> > >& goal_locations,
              int time_limit);
 	
 	string get_name() const {return "WHCA"; }

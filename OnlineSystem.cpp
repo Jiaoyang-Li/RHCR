@@ -46,7 +46,7 @@ void OnlineSystem::update_start_and_goal_locations(int num_of_new_agents)
 		 // randomly select ab exit cell as the goal
 		idx = rand() % G.exits.size();
 		goal_locations.emplace_back();
-		goal_locations.back().push_back(G.exits[idx]);
+		goal_locations.back().emplace_back(G.exits[idx], 0);
 		count++;
 	}
 	num_of_drives = (int)starts.size();
@@ -128,7 +128,7 @@ void OnlineSystem::move()
 			}
 
 			// Check whether the agent has reached its goal location
-			if ((int)path->size() == t + 1 && path->back().location == goal->at(0))
+			if ((int)path->size() == t + 1 && path->back().location == goal->at(0).first)
 			{
 				auto start = path->begin(); // find the start state of the agent
 				while (start->timestep < 0)

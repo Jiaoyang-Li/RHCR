@@ -29,7 +29,7 @@ public:
 
     // Runs the algorithm until the problem is solved or time is exhausted
     bool run(const vector<State>& starts,
-             const vector< vector<int> >& goal_locations, 
+             const vector< vector<pair<int, int> > >& goal_locations, 
              int time_limit);
 
 
@@ -55,8 +55,8 @@ private:
 
     ECBSNode* best_node;
 
-    vector<State> starts;
-    vector< vector<int> > goal_locations;
+    // vector<State> starts;
+    // vector< vector<int> > goal_locations;
     std::vector< Path* > paths;
     std::vector<double> path_min_costs;
     std::vector<double> path_costs;

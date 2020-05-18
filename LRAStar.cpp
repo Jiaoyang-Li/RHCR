@@ -3,7 +3,7 @@
 LRAStar::LRAStar(const BasicGraph &G, SingleAgentSolver& path_planner): MAPFSolver(G, path_planner), num_expanded(0), num_generated(0) {}
 
 
-bool LRAStar::run(const vector<State>& starts, const vector< vector<int> >& goal_locations, int time_limit)
+bool LRAStar::run(const vector<State>& starts, const vector< vector<pair<int, int> > >& goal_locations, int time_limit)
 {
 	clock_t start = std::clock();
 	// plan individual paths
@@ -25,7 +25,7 @@ bool LRAStar::run(const vector<State>& starts, const vector< vector<int> >& goal
 }
 
 
-Path LRAStar::find_shortest_path(const State& start, const vector<int>& goal_locations)
+Path LRAStar::find_shortest_path(const State& start, const vector<pair<int, int> >& goal_locations)
 {
 	// The following is used to generate the hash value of a node
 	struct Hasher
@@ -68,7 +68,8 @@ Path LRAStar::find_shortest_path(const State& start, const vector<int>& goal_loc
 		num_expanded++;
 
 		// check if the popped node is a goal
-		if (curr->state.location == goal_locations[curr->goal_id])
+		if (curr->state.location == goal_locations[curr->goal_id].first &&
+			curr->state.timestep >= goal_locations[curr->goal_id].second) // reach the goal location after its release time
 		{
 			curr->goal_id++;
 			if (curr->goal_id == (int)goal_locations.size())

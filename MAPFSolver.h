@@ -32,7 +32,7 @@ public:
 	SingleAgentSolver& path_planner;
 	// Runs the algorithm until the problem is solved or time is exhausted 
     virtual bool run(const vector<State>& starts,
-            const vector< vector<int> >& goal_locations,
+            const vector< vector<pair<int, int> > >& goal_locations,  // an ordered list of pairs of <location, release time>
             int time_limit) = 0;
 
 
@@ -49,7 +49,7 @@ public:
 
     const BasicGraph& G;
     vector<State> starts;
-    vector< vector<int> > goal_locations;
+    vector< vector<pair<int, int> > > goal_locations;
     int num_of_agents;
 	int time_limit;
 

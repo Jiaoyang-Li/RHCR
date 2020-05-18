@@ -151,7 +151,7 @@ void PBS::find_conflicts(list<Conflict>& conflicts, int a1, int a2)
 			{
 				int loc1 = paths[a1]->at(timestep).location;
 				int loc2 = paths[a2]->at(timestep).location;
-				if (loc1 == paths[a2]->at(timestep + 1).location
+				if (loc1 != loc2 && loc1 == paths[a2]->at(timestep + 1).location
 						 && loc2 == paths[a1]->at(timestep + 1).location)
 				{
 					conflicts.emplace_back(a1, a2, loc1, loc2, timestep + 1); // edge conflict
@@ -635,7 +635,7 @@ void PBS::update_best_node(PBSNode* node)
 }
 
 bool PBS::run(const vector<State>& starts,
-                    const vector< vector<int> >& goal_locations,
+                    const vector< vector<pair<int, int> > >& goal_locations,
                     int time_limit)
 {
     clear();
@@ -789,10 +789,10 @@ bool PBS::run(const vector<State>& starts,
     for (int i = 0; i < num_of_agents; i++)
     {
         int start = starts[i].location;
-        for (int goal : goal_locations[i])
+        for (const auto& goal : goal_locations[i])
         {
-            min_sum_of_costs += G.heuristics.at(goal)[start];
-            start = goal;
+            min_sum_of_costs += G.heuristics.at(goal.first)[start];
+            start = goal.first;
         }
     }
 	if (screen > 0) // 1 or 2

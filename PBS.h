@@ -43,7 +43,7 @@ public:
 
 	// Runs the algorithm until the problem is solved or time is exhausted 
     bool run(const vector<State>& starts,
-            const vector< vector<int> >& goal_locations,
+            const vector< vector<pair<int, int> > >& goal_locations, // an ordered list of pairs of <location, release time>
             int time_limit);
 
 
@@ -72,8 +72,8 @@ private:
     list<PBSNode*> allNodes_table;
     list<PBSNode*> dfs;
 
-    vector<State> starts;
-    vector< vector<int> > goal_locations;
+   //  vector<State> starts;
+    // vector< vector<int> > goal_locations;
 
     std::clock_t start;
 

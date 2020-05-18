@@ -85,7 +85,7 @@ class SIPP: public SingleAgentSolver
 {
 public:
     Path run(const BasicGraph& G, const State& start,
-             const vector<int>& goal_location,
+             const vector<pair<int, int> >& goal_location,
              ReservationTable& RT);
 	string getName() const { return "SIPP"; }
     SIPP(): SingleAgentSolver() {}

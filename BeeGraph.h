@@ -7,7 +7,11 @@ class BeeGraph :
 {
 public:
 	vector<int> flowers;
+	vector<int> flower_demands;
+	vector<int> flower_costs;
+	vector<pair<int, int> > flower_time_windows;
 	vector<int> initial_locations;
+	int bee_capacity;
 	int entrance; // vertex collisions at home will be ignored
 	int num_of_bees;
 	int max_timestep;

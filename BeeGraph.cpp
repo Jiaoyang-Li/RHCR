@@ -5,11 +5,11 @@
 bool BeeGraph::load_map(string fname)
 {
 	using namespace boost;
-
+	// read parameters
 	std::ifstream myfile((fname).c_str());
 	if (!myfile.is_open())
 	{
-		std::cout << "Map file " << fname << " does not exist. " << std::endl;
+		std::cout << "Parameter file " << fname << " does not exist. " << std::endl;
 		return false;
 	}
 	clock_t t = std::clock();
@@ -27,18 +27,27 @@ bool BeeGraph::load_map(string fname)
 	int num_of_flowers;
 	myfile >> temp >> num_of_flowers; // D
 	flowers.resize(num_of_flowers);
+	flower_demands.resize(num_of_flowers);
+	flower_costs.resize(num_of_flowers);
+	flower_time_windows.resize(num_of_flowers);
 	myfile >> temp >> num_of_bees; // N
 	int num_of_initial_locations;
 	myfile >> temp >> num_of_initial_locations; // R
 	initial_locations.resize(num_of_initial_locations);
 	myfile >> temp >> max_timestep; // T
-	getline(myfile, temp);
-	getline(myfile, temp); // skip "Q"
-	getline(myfile, temp); // skip "demand"
+	myfile >> temp >> bee_capacity; // Q
+	myfile >> temp; // demand
+	for (int i = 0; i < num_of_flowers; i++)
+	{
+		myfile >> flower_demands[i];
+	}
 	myfile >> temp >> wait_cost; // theta_1
 	myfile >> temp >> move_cost; // theta_2
-	getline(myfile, temp);
-	getline(myfile, temp); // skip "theta_d"
+	myfile >> temp; // theta_d
+	for (int i = 0; i < num_of_flowers; i++)
+	{
+		myfile >> flower_costs[i];
+	}
 	myfile >> temp; // D_locations
 	for (int i = 0; i < num_of_flowers; i++)
 	{
@@ -68,10 +77,11 @@ bool BeeGraph::load_map(string fname)
 	{
 		weights[i].resize(5, WEIGHT_MAX);
 		if (types[i] == "Obstacle")
-		{
 			continue;
-		}
-		weights[i][4] = wait_cost; // wait actions is allowed
+		else if (types[i] == "Magic")
+			weights[i][4] = wait_cost; //0; // waiting at the entrance has zero costs.
+		else
+			weights[i][4] = wait_cost; // wait actions are allowed
 		for (int dir = 0; dir < 4; dir++)
 		{
 			if (0 <= i + move[dir] && i + move[dir] < cols * rows && get_Manhattan_distance(i, i + move[dir]) <= 1 && types[i + move[dir]] != "Obstacle")
@@ -80,6 +90,29 @@ bool BeeGraph::load_map(string fname)
 	}
 
 	myfile.close();
+
+	// read time windows
+	string windowfname;
+	pos = map_name.rfind("parameter");
+	windowfname = map_name.replace(pos, 9, "D_time_windows");
+	windowfname = windowfname + ".csv";
+	std::ifstream myfile2(windowfname.c_str());
+	if (!myfile2.is_open())
+	{
+		std::cout << "Time window file " << fname << " does not exist. " << std::endl;
+		return false;
+	}
+	char_separator<char> sep(",");
+	for (int i = 0; i < num_of_flowers; i++)
+	{
+		getline(myfile2, temp);
+		tokenizer< char_separator<char> > tok(temp, sep);
+		auto beg = tok.begin();
+		flower_time_windows[i].first = atoi((*beg).c_str()); // read release time
+		beg++;
+		flower_time_windows[i].second = atoi((*beg).c_str()); // read deadline
+	}
+	myfile2.close();
 	loading_time = (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
 	// std::cout << "Map size: " << rows << "x" << cols << std::endl;
 	// std::cout << "Done! (" << runtime << " s)" << std::endl;

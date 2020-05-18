@@ -4,7 +4,7 @@ WHCAStar::WHCAStar(const BasicGraph &G, SingleAgentSolver& path_planner) : MAPFS
 
 
 bool WHCAStar::run(const vector<State>& starts,
-                   const vector< vector<int> >& goal_locations,
+                   const vector< vector<pair<int, int> > >& goal_locations,
                    int time_limit)
 {
     // set timer
@@ -70,10 +70,10 @@ bool WHCAStar::run(const vector<State>& starts,
             for (int i = 0; i < num_of_agents; i++)
             {
                 int start = starts[i].location;
-                for (int goal : goal_locations[i])
+                for (const auto& goal : goal_locations[i])
                 {
-                    min_sum_of_costs += G.heuristics.at(goal)[start];
-                    start = goal;
+                    min_sum_of_costs += G.heuristics.at(goal.first)[start];
+                    start = goal.first;
                 }
             }
             avg_path_length = 0;
