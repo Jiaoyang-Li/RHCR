@@ -213,8 +213,12 @@ int main(int argc, char** argv)
 		cout << "Makespan:		" << system.get_makespan() << " timesteps." << endl;
 		cout << "Flowtime:		" << system.get_flowtime() << " timesteps." << endl;
 		cout << "Flowtime lowerbound:	" << system.get_flowtime_lowerbound() << " timesteps." << endl;
-		cout << "Missed tasks: " << system.get_num_of_missed_tasks() << endl;
-		cout << "Remaining tasks: " << system.get_num_of_remaining_tasks() << endl;
+		auto flower_ids = system.get_missed_flower_ids();
+		cout << "Missed tasks:";
+		for (auto id : flower_ids)
+			cout << " " << id;
+		cout << endl;
+		// cout << "Remaining tasks: " << system.get_num_of_remaining_tasks() << endl;
 		cout << "Objective: " << system.get_objective() << endl;
 		std::ofstream output;
 		output.open(vm["output"].as<std::string>() + "/MAPF_results.txt", std::ios::out);
@@ -222,8 +226,10 @@ int main(int argc, char** argv)
 		output << "Makespan: " << system.get_makespan() << " timesteps." << endl;
 		output << "Flowtime: " << system.get_flowtime() << " timesteps." << endl;
 		output << "Flowtime lowerbound: " << system.get_flowtime_lowerbound() << " timesteps." << endl;
-		output << "Missed tasks: " << system.get_num_of_missed_tasks() << endl;
-		output << "Remaining tasks: " << system.get_num_of_remaining_tasks() << endl;
+		output << "Missed tasks:";
+		for (auto id : flower_ids)
+			output << " " << id;
+		output << endl;
 		output << "Objective: " << system.get_objective() << endl;
 		output.close();
         return 0;

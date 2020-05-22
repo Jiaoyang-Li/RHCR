@@ -230,6 +230,7 @@ int BeeSystem::get_num_of_missed_tasks() const
 			}
 		}
 	}
+	return missed_tasks;
 }
 
 int BeeSystem::get_num_of_remaining_tasks() const
@@ -239,7 +240,65 @@ int BeeSystem::get_num_of_remaining_tasks() const
 	{
 		remaining_tasks += (int) tasks.size();
 	}
+	for (const auto& tasks : finished_tasks)
+	{
+		auto task = tasks.rbegin();
+		while (task != tasks.rend() && task->first != G.entrance) // robot fails to carry the items back to the entrance
+		{
+			remaining_tasks++;
+			task++;
+		}
+	}
 	return remaining_tasks;
+}
+
+list<int> BeeSystem::get_missed_flower_ids() const
+{
+	list<int> ids;
+	for (const auto& tasks : task_sequences) // unfinished tasks
+	{
+		for (const auto& task : tasks)
+		{
+			for (int i = 0; i < (int)G.flowers.size(); i++)
+			{
+				if (task.first == G.flowers[i])
+				{
+					ids.push_back(i + 1);
+					break;
+				}
+			}
+		}
+	}
+	for (auto finished_task : finished_tasks) // finished tasks
+	{
+		auto task = finished_task.rbegin();
+		while (task != finished_task.rend() && task->first != G.entrance) // robot fails to carry the items back to the entrance
+		{
+			for (int i = 0; i < (int)G.flowers.size(); i++)
+			{
+				if (task->first == G.flowers[i])
+				{
+					ids.push_back(i + 1);
+					break;
+				}
+			}
+			++task;
+		}
+		while (task != finished_task.rend()) // robot reaches the task after its deadline
+		{
+			for (int i = 0; i < (int)G.flowers.size(); i++)
+			{
+				if (task->first == G.flowers[i])
+				{
+					if (task->second > G.flower_time_windows[i].second)
+						ids.push_back(i + 1);
+					break;
+				}
+			}
+			++task;
+		}
+	}
+	return ids;
 }
 
 int BeeSystem::get_makespan()
@@ -308,16 +367,22 @@ int BeeSystem::get_objective() const
 	int task_cost = 0;
 	for (auto finished_task : finished_tasks)
 	{
-		for (auto task : finished_task)
+		auto task = finished_task.rbegin();
+		while (task != finished_task.rend() && task->first != G.entrance) // robot fails to carry the items back to the entrance
+		{
+			++task;
+		}
+		while (task != finished_task.rend())
 		{
 			for (int i = 0; i < (int)G.flowers.size(); i++)
 			{
-				if (task.first == G.flowers[i] && task.second <= G.flower_time_windows[i].second)
+				if (task->first == G.flowers[i] && task->second <= G.flower_time_windows[i].second)
 				{
 					task_cost += G.flower_costs[i];
 					break;
 				}
 			}
+			++task;
 		}
 	}
 	return path_cost + task_cost;

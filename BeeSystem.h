@@ -11,6 +11,7 @@ public:
 	bool load_task_assignments(string fname);
 	int get_num_of_missed_tasks() const; // the robots reach these tasks after their deadlines
 	int get_num_of_remaining_tasks() const; // the robots have not complete these tasks
+	list<int> get_missed_flower_ids() const; // return the ids of the flowers that the robot supposed to complete but didn't
 	int get_makespan();
 	int get_flowtime() const;
 	int get_flowtime_lowerbound() const;
