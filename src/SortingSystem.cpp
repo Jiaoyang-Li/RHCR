@@ -145,13 +145,20 @@ void SortingSystem::simulate(int simulation_time)
     std::cout << "*** Simulating " << seed << " ***" << std::endl;
     this->simulation_time = simulation_time;
     initialize();
-	
+
+    Clustering cluster;
+    cluster.run();
+    return;
+
 	for (; timestep < simulation_time; timestep += simulation_window)
 	{
 		std::cout << "Timestep " << timestep << std::endl;
 
 		update_start_locations();
 		update_goal_locations();
+
+
+
 		solve();
 
 		// move drives
