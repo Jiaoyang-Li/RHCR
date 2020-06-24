@@ -1,14 +1,33 @@
 #pragma once
-#include "BasicGraph.h"
+#include "MDD.h"
 
 class Clustering {
 public:
     void run(); //Wooju
 
-private:
-    int num_of_agents;
-    vector<int> start_locations;
+    void updateLocations(const vector<State>& starts,
+              const vector< vector<pair<int, int> > >& goal_locations);
 
-    int getDistance(int a1, int a2); // Jiaoyang will do this
+    void clear() { distances.clear(); }
+
+    Clustering(const BasicGraph& G, int planning_window, int lookahead):
+        G(G), mdd_helper(G, planning_window,lookahead), lookahead(lookahead) {}
+
+    void writeDistanceMatrixToFile();
+private:
+    const BasicGraph& G;
+    MDDTable mdd_helper;
+    int lookahead;
+    vector<vector<int> > landmarks;
+    vector< vector<int> > distances;
+    vector<MDD*> mdds;
+
+    clock_t start_time;
+    // variables and functions for clustering
+    int num_of_agents = 0;
+    int getDistance(int a1, int a2);
+    int getStartVertex(int agent) const { return landmarks[agent][0]; }
+    int getFirstGoalVertex(int agent) const { return landmarks[agent][1]; }
+
 };
 

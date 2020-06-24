@@ -146,9 +146,7 @@ void SortingSystem::simulate(int simulation_time)
     this->simulation_time = simulation_time;
     initialize();
 
-    Clustering cluster;
-    cluster.run();
-    return;
+    Clustering cluster(G, planning_window, planning_window);
 
 	for (; timestep < simulation_time; timestep += simulation_window)
 	{
@@ -157,7 +155,10 @@ void SortingSystem::simulate(int simulation_time)
 		update_start_locations();
 		update_goal_locations();
 
-
+        cluster.updateLocations(starts, goal_locations);
+        cluster.writeDistanceMatrixToFile();
+        cluster.run();
+        return;
 
 		solve();
 

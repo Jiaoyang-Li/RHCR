@@ -8,7 +8,7 @@
 class BasicGraph
 {
 public:
-    vector<std::string> types;
+    vector<string> types;
     unordered_map<int, vector<double>> heuristics;
 
     string map_name;

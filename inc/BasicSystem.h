@@ -53,7 +53,7 @@ public:
 
     // used for MAPF instance
     vector<State> starts;
-    vector< vector<pair<int, int> > > goal_locations;
+    vector< vector<pair<int, int> > > goal_locations; // pair<location, deadline>
 	// unordered_set<int> held_endpoints;
     int timestep;
 
