@@ -13,7 +13,6 @@ cmake-build-release
 maps
 experiments
 *.bat
-*.pptx
 vs_commands.txt
 *.xml
 *.iml
