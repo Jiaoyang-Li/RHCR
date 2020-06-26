@@ -158,7 +158,8 @@ void SortingSystem::simulate(int simulation_time)
         cluster.updateLocations(starts, goal_locations);
         cluster.writeDistanceMatrixToFile();
         cluster.run();
-        return;
+        cluster.clear();
+        // return;
 
 		solve();
 

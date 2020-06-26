@@ -17,16 +17,8 @@ MDD* MDDTable::buildMDD(const vector<int>& landmarks)
 	{
 		auto curr = open.front();
 		open.pop();
-		if (curr->level == planning_window)
+		if (curr->level == planning_window || curr->goal_id == (int)landmarks.size())
 			continue;
-		if (curr->goal_id == (int)landmarks.size())
-        {
-            mdd->levels[curr->level + 1].emplace_back(curr->location, curr);
-            auto next = &mdd->levels[curr->level + 1].back();
-            next->cost = curr->cost + 1;
-            open.push(next);
-            continue;
-        }
 		// We want (g + 1) + h <= numOfLevels, so h <= numOfLevels - g - 1.
 		int heuristicBound = upper_bound - curr->level - 1;
 		for (auto next_location : G.get_neighbors(curr->location)) // Try every possible move. We only add backward edges in this step.
