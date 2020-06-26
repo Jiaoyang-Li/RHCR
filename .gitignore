@@ -11,7 +11,6 @@ aws.pem
 cmake-build-debug
 cmake-build-release
 maps
-python-tools
 experiments
 *.bat
 *.pptx
