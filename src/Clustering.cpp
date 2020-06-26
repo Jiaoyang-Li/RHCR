@@ -2,7 +2,48 @@
 
 void Clustering::run() //Wooju
 {
-    cout << "Haha" << endl;
+    //First Linkage Algorithm
+    
+
+    //First find the distance between all values in the matrix
+    for (int i = 0; i < num_of_agents; ++i) {
+        for (int j = 0; j < num_of_agents; ++j) {
+            if (i == j) {
+                distances[i][j] = 0;
+                continue;
+            }
+            //Probably have to include mirroring
+            getDistance(i, j);
+        }
+    }
+    //Reptition 
+    for (int x = 0; x < num_of_agents; ++x) {
+
+
+        int min = INT_MAX;
+        int distance = 0;
+        int indexi = 0, indexj = 0;
+        //Find the min value between the two points
+        for (int i = 0; i < num_of_agents; ++i) {
+            for (int j = 0; j < num_of_agents; ++j) {
+                distance = getDistance(i, j);
+                if (distance != 0 && distance < min) {
+                    min = distance;
+                    indexi = i;
+                    indexj = j;
+                }
+            }
+        }
+
+
+    }
+
+
+
+
+
+
+
 }
 
 void Clustering::writeDistanceMatrixToFile()
@@ -33,6 +74,9 @@ int Clustering::getDistance(int a1, int a2) // Jiaoyang will do this
 {
     if (distances[a1][a2] >= 0)
         return distances[a1][a2];
+    //Mirroring
+    else if (distances[a2][a1] >= 0)
+        return distances[a2][a1];
 
     assert(mdds[a1]->levels.size() == mdds[a2]->levels.size());
     int min_distance = INT_MAX;

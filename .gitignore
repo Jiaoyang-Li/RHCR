@@ -18,3 +18,4 @@ experiments
 vs_commands.txt
 *.xml
 *.iml
+out
