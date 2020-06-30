@@ -1,49 +1,35 @@
 #include "Clustering.h"
+#include "stdafx.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include "dataanalysis.h"
+
+using namespace alglib;
 
 void Clustering::run() //Wooju
 {
-    //First Linkage Algorithm
-    
+    clusterizerstate clusterstate;
+    ahcreport report;
+    real_2d_array xy = "[[1,1],[1,2],[4,1],[2,3],[4,1.5]]";
+    integer_1d_array cidx;
+    integer_1d_array cz;
 
-    //First find the distance between all values in the matrix
-    for (int i = 0; i < num_of_agents; ++i) {
-        for (int j = 0; j < num_of_agents; ++j) {
-            if (i == j) {
-                distances[i][j] = 0;
-                continue;
-            }
-            //Probably have to include mirroring
-            getDistance(i, j);
-        }
-    }
-    //Reptition 
-    for (int x = 0; x < num_of_agents; ++x) {
+    clusterizercreate(clusterstate);
 
+    //Euclidean Distance 
+    clusterizersetpoints(clusterstate, xy, 2);
 
-        int min = INT_MAX;
-        int distance = 0;
-        int indexi = 0, indexj = 0;
-        //Find the min value between the two points
-        for (int i = 0; i < num_of_agents; ++i) {
-            for (int j = 0; j < num_of_agents; ++j) {
-                distance = getDistance(i, j);
-                if (distance != 0 && distance < min) {
-                    min = distance;
-                    indexi = i;
-                    indexj = j;
-                }
-            }
-        }
+    //Single Linkage
+    clusterizersetahcalgo(clusterstate, 1);
 
+    //5 is the number of clusters
+    clusterizergetkclusters(report, 5, cidx, cz);
 
-    }
+    clusterizerrunahc(clusterstate, report);
 
-
-
-
-
-
-
+    printf("%s\n", cidx.tostring().c_str()); // EXPECTED: [0,1,2,3,4]
+    printf("%s\n", report.z.tostring().c_str()); // EXPECTED: [[2,4],[0,1],[3,6],[5,7]]
 }
 
 void Clustering::writeDistanceMatrixToFile()

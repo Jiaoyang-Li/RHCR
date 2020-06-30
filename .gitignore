@@ -4,10 +4,12 @@ lifelong.sln
 lifelong.vcxproj
 lifelong.vcxproj.filters
 lifelong.vcxproj.user
+CMakeCache.txt
 .idea
 .gitignore
 aws.pem
 .vs
+CMakeFiles
 cmake-build-debug
 cmake-build-release
 maps
