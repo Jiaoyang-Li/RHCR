@@ -171,9 +171,9 @@ int main(int argc, char** argv)
 			 return -1;
 		 MAPFSolver* solver = set_solver(G, vm);
 		 SortingSystem system(G, *solver);
+		 set_parameters(system, vm);
 		 assert(!system.hold_endpoints);
 		 assert(!system.useDummyPaths);
-		 set_parameters(system, vm);
 		 G.preprocessing(system.consider_rotation);
 		 system.simulate(vm["simulation_time"].as<int>());
 		 return 0;
@@ -185,9 +185,9 @@ int main(int argc, char** argv)
 			return -1;
 		MAPFSolver* solver = set_solver(G, vm);
 		OnlineSystem system(G, *solver);
+		set_parameters(system, vm);
 		assert(!system.hold_endpoints);
 		assert(!system.useDummyPaths);
-		set_parameters(system, vm);
 		G.preprocessing(system.consider_rotation);
 		system.simulate(vm["simulation_time"].as<int>());
 		return 0;
@@ -199,9 +199,9 @@ int main(int argc, char** argv)
 			return -1;
 		MAPFSolver* solver = set_solver(G, vm);
 		BeeSystem system(G, *solver);
+		set_parameters(system, vm);
 		assert(!system.hold_endpoints);
 		assert(!system.useDummyPaths);
-		set_parameters(system, vm);
 		G.preprocessing(vm["task"].as<std::string>(), system.consider_rotation);
 		system.load_task_assignments(vm["task"].as<std::string>());
 		system.simulate();
