@@ -9,27 +9,36 @@ using namespace alglib;
 
 void Clustering::run() //Wooju
 {
+    //Update distance matrix
+    getAllDistances();
+
+    real_2d_array xy;
+    xy.setlength(num_of_agents, num_of_agents);
+    for (int i = 0; i < num_of_agents; i++) {
+        for (int j = 0; j < num_of_agents; j++) {
+            xy(i, j) = distances[i][j];
+        }
+    }
     clusterizerstate clusterstate;
     ahcreport report;
-    real_2d_array xy = "[[1,1],[1,2],[4,1],[2,3],[4,1.5]]";
-    integer_1d_array cidx;
-    integer_1d_array cz;
+    //integer_1d_array cidx;
+    //integer_1d_array cz;
 
     clusterizercreate(clusterstate);
 
-    //Euclidean Distance 
-    clusterizersetpoints(clusterstate, xy, 2);
+    //Upper Triangle
+    clusterizersetdistances(clusterstate, xy, true);
 
-    //Single Linkage
+    //Single Linkage Algorithm
     clusterizersetahcalgo(clusterstate, 1);
 
     //5 is the number of clusters
-    clusterizergetkclusters(report, 5, cidx, cz);
+    //clusterizergetkclusters(report, 5, cidx, cz);
 
     clusterizerrunahc(clusterstate, report);
 
-    printf("%s\n", cidx.tostring().c_str()); // EXPECTED: [0,1,2,3,4]
-    printf("%s\n", report.z.tostring().c_str()); // EXPECTED: [[2,4],[0,1],[3,6],[5,7]]
+    //printf("%s\n", cidx.tostring().c_str());
+    printf("%s\n", report.z.tostring().c_str());
 }
 
 void Clustering::writeDistanceMatrixToFile()
@@ -55,14 +64,26 @@ void Clustering::writeDistanceMatrixToFile()
     output.close();
     cout << (double)(clock() - start_time) / CLOCKS_PER_SEC << "s" << endl;
 }
+void Clustering::getAllDistances(){
+    for (int i = 0; i < num_of_agents; ++i) {
+        for (int j = 0; j < num_of_agents; ++j) {
+            getDistance(i, j);
+        }
+    }
 
-int Clustering::getDistance(int a1, int a2) // Jiaoyang will do this
+}
+int Clustering::getDistance(int a1, int a2) 
 {
     if (distances[a1][a2] >= 0)
         return distances[a1][a2];
     //Mirroring
     else if (distances[a2][a1] >= 0)
         return distances[a2][a1];
+    //Same value
+    else if (a1 == a2) {
+        distances[a1][a2] = 0;
+        return 0;
+    }
 
     assert(mdds[a1]->levels.size() == mdds[a2]->levels.size());
     int min_distance = INT_MAX;

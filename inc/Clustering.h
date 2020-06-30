@@ -10,6 +10,7 @@ public:
 
     void clear() { distances.clear(); }
 
+
     Clustering(const BasicGraph& G, int planning_window, int lookahead):
         G(G), mdd_helper(G, planning_window,lookahead), lookahead(lookahead) {}
 
@@ -28,6 +29,7 @@ private:
     int getDistance(int a1, int a2);
     int getStartVertex(int agent) const { return landmarks[agent][0]; }
     int getFirstGoalVertex(int agent) const { return landmarks[agent][1]; }
+    void getAllDistances();
 
 };
 
