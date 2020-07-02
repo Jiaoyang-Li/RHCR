@@ -9,36 +9,29 @@ using namespace alglib;
 
 void Clustering::run() //Wooju
 {
-    ////Update distance matrix
-    //getAllDistances();
-
-    //real_2d_array xy;
-    //xy.setlength(num_of_agents, num_of_agents);
-    //for (int i = 0; i < num_of_agents; i++) {
-    //    for (int j = 0; j < num_of_agents; j++) {
-    //        xy(i, j) = distances[i][j];
-    //    }
-    //}
-    //clusterizerstate clusterstate;
-    //ahcreport report;
-    ////integer_1d_array cidx;
-    ////integer_1d_array cz;
-
-    //clusterizercreate(clusterstate);
-
-    ////Upper Triangle
-    //clusterizersetdistances(clusterstate, xy, true);
-
-    ////Single Linkage Algorithm
-    //clusterizersetahcalgo(clusterstate, 1);
-
-    ////5 is the number of clusters
-    ////clusterizergetkclusters(report, 5, cidx, cz);
-
-    //clusterizerrunahc(clusterstate, report);
-
-    ////printf("%s\n", cidx.tostring().c_str());
-    //printf("%s\n", report.z.tostring().c_str());
+    //Update distance matrix
+    getAllDistances();
+    real_2d_array xy;
+    xy.setlength(num_of_agents, num_of_agents);
+    for (int i = 0; i < num_of_agents; i++) {
+        for (int j = 0; j < num_of_agents; j++) {
+            xy(i, j) = distances[i][j];
+        }
+    }
+    clusterizerstate clusterstate;
+    ahcreport report;
+    //integer_1d_array cidx;
+    //integer_1d_array cz;
+    clusterizercreate(clusterstate);
+    //Upper Triangle
+    clusterizersetdistances(clusterstate, xy, true);
+    //Single Linkage Algorithm
+    clusterizersetahcalgo(clusterstate, 1);
+    //5 is the number of clusters
+    //clusterizergetkclusters(report, 5, cidx, cz);
+    clusterizerrunahc(clusterstate, report);
+    //printf("%s\n", cidx.tostring().c_str());
+    printf("%s\n", report.z.tostring().c_str());
 }
 
 void Clustering::writeDistanceMatrixToFile()
