@@ -9,6 +9,11 @@ using namespace alglib;
 
 void Clustering::run() //Wooju
 {
+
+    //Clear clusters?
+    clusters.clear();
+
+
     //Update distance matrix
     getAllDistances();
     real_2d_array xy;
@@ -20,18 +25,53 @@ void Clustering::run() //Wooju
     }
     clusterizerstate clusterstate;
     ahcreport report;
-    //integer_1d_array cidx;
-    //integer_1d_array cz;
+    integer_1d_array cidx;
+    integer_1d_array cz;
     clusterizercreate(clusterstate);
     //Upper Triangle
     clusterizersetdistances(clusterstate, xy, true);
     //Single Linkage Algorithm
     clusterizersetahcalgo(clusterstate, 1);
     //5 is the number of clusters
-    //clusterizergetkclusters(report, 5, cidx, cz);
     clusterizerrunahc(clusterstate, report);
+
+    clusterizergetkclusters(report, 2, cidx, cz);
     //printf("%s\n", cidx.tostring().c_str());
-    printf("%s\n", report.z.tostring().c_str());
+    //printf("%s\n", report.z.tostring().c_str());
+
+    vector<int> cluster1, cluster2;
+    for (int index = 0; index < cidx.length(); ++index) {
+        //First cluster
+        if (cidx[index] == 0) {
+            cluster1.emplace_back(index);
+        }
+        //Second cluster
+        else if(cidx[index] == 1){
+            cluster2.emplace_back(index);
+        }
+    }
+    clusters.push_back(cluster1);
+    clusters.push_back(cluster2);
+
+    int index = 0;
+    //Show output
+    for (auto vec : clusters) {
+        std::cout << "Cluster " << index << ": " ;
+        for (auto i : vec) {
+            std::cout << i << " ";
+        }
+        ++index;
+        std::cout << endl;
+    }
+    /*std::cout << std::endl;
+    std::cout << "Cluster 2: ";
+    for (auto vec : cluster2) {
+        std::cout << vec << " ";
+    }
+    std::cout << std::endl;*/
+
+
+
 }
 
 void Clustering::writeDistanceMatrixToFile()

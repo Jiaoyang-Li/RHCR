@@ -19,9 +19,10 @@ private:
     const BasicGraph& G;
     MDDTable mdd_helper;
     int lookahead;
-    vector<vector<int> > landmarks;
-    vector< vector<int> > distances;
-    vector<MDD*> mdds;
+    std::vector<vector<int>> landmarks;
+    std::vector<vector<int>> distances;
+    std::vector<vector<int>> clusters;
+    std::vector<MDD*> mdds;
 
     clock_t start_time;
     // variables and functions for clustering
