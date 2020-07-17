@@ -15,6 +15,7 @@ public:
         G(G), mdd_helper(G, planning_window,lookahead), lookahead(lookahead) {}
 
     void writeDistanceMatrixToFile();
+    std::vector<vector<int>> getClusters() { return clusters; }
 private:
     const BasicGraph& G;
     MDDTable mdd_helper;
