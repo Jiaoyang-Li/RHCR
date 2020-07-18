@@ -6,13 +6,14 @@
 #include "WHCAStar.h"
 #include "ECBS.h"
 #include "LRAStar.h"
-
+#include "Clustering.h"
 
 class BasicSystem
 {
 public:
     // params for MAPF algotithms
 	MAPFSolver& solver;
+    Clustering clustering;
 	bool hold_endpoints;
 	bool useDummyPaths;
     int time_limit;
@@ -75,6 +76,7 @@ public:
 	void add_partial_priorities(const vector<Path>& initial_paths, PriorityGraph& initial_priorities) const;
 	list<tuple<int, int, int>> move(); // return finished tasks
 	void solve();
+	void solve_by_groups();
 	void initialize_solvers();
 	bool load_records();
 	bool load_locations();
@@ -83,7 +85,6 @@ public:
 protected:
 	bool solve_by_WHCA(vector<Path>& planned_paths,
 		const vector<State>& new_starts, const vector< vector<pair<int, int> > >& new_goal_locations);
-
 private:
 	const BasicGraph& G;
 };

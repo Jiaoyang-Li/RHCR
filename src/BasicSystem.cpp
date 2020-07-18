@@ -3,7 +3,8 @@
 #include <boost/tokenizer.hpp>
 
 
-BasicSystem::BasicSystem(const BasicGraph& G, MAPFSolver& solver): G(G), solver(solver), num_of_tasks(0) {}
+BasicSystem::BasicSystem(const BasicGraph& G, MAPFSolver& solver):
+    G(G), solver(solver), num_of_tasks(0), clustering(G, planning_window, planning_window) {}
 
 BasicSystem::~BasicSystem() {}
 
@@ -478,7 +479,7 @@ void BasicSystem::save_results()
     output.close();
 
     // tasks
-    output.open(outfile + "\\tasks.txt", std::ios::out);
+    output.open(outfile + "/tasks.txt", std::ios::out);
     output << num_of_drives << std::endl;
     for (int k = 0; k < num_of_drives; k++)
     {
@@ -500,11 +501,11 @@ void BasicSystem::save_results()
     output.close();
 
     // paths
-    output.open(outfile + "\\paths.txt", std::ios::out);
+    output.open(outfile + "/paths.txt", std::ios::out);
     output << num_of_drives << std::endl;
     for (int k = 0; k < num_of_drives; k++)
     {
-        for (auto p : paths[k])
+        for (const auto& p : paths[k])
         {
             if (p.timestep <= timestep)
                 output << p << ";";
@@ -512,7 +513,7 @@ void BasicSystem::save_results()
         output << std::endl;
     }
     output.close();
-    saving_time = (std::clock() - t) / CLOCKS_PER_SEC;
+    saving_time = (double)(std::clock() - t) / CLOCKS_PER_SEC;
 	if (screen)
 		std::cout << "Done! (" << saving_time << " s)" << std::endl;
 }
@@ -594,97 +595,177 @@ void BasicSystem::solve()
 			update_paths(lra.solution);
 		}
 	}
-	 else // PBS or ECBS
-	 {
-		 //PriorityGraph initial_priorities;
-		 update_initial_constraints(solver.initial_constraints);
+    else // PBS or ECBS
+    {
+     //PriorityGraph initial_priorities;
+     update_initial_constraints(solver.initial_constraints);
 
-		 // solve
-		 if (hold_endpoints || useDummyPaths)
-		 {
-			 vector<State> new_starts;
-			 vector< vector<pair<int, int> > > new_goal_locations;
-			 for (int i : new_agents)
-			 {
-				 new_starts.emplace_back(starts[i]);
-				 new_goal_locations.emplace_back(goal_locations[i]);
-			 }
-			 vector<Path> planned_paths(num_of_drives);
-			 solver.initial_rt.clear();
-			 auto p = new_agents.begin();
-			 for (int i = 0; i < num_of_drives; i++)
-			 {
-				 if (p == new_agents.end() || *p != i)
-				 {
-					 planned_paths[i].resize(paths[i].size() - timestep);
-					 for (int t = 0; t < (int)planned_paths[i].size(); t++)
-					 {
-						 planned_paths[i][t] = paths[i][timestep + t];
-						 planned_paths[i][t].timestep = t;
-					 }
-					 solver.initial_rt.insertPath2CT(planned_paths[i]);
-				 }
-				 else
-					 ++p;
-			 }
-			 if (!new_agents.empty())
-			 {
-				 bool sol = solver.run(new_starts, new_goal_locations, time_limit);
-				 if (sol)
-				 {
-					 auto pt = solver.solution.begin();
-					 for (int i : new_agents)
-					 {
-						 planned_paths[i] = *pt;
-						 ++pt;
-					 }
-					 if (check_collisions(planned_paths))
-					 {
-						 cout << "COLLISIONS!" << endl;
-						 exit(-1);
-					 }
-				 }
-				 else
-				 {
-					 if (timestep == 0)
-							sol = solve_by_WHCA(planned_paths, new_starts, new_goal_locations);
-					if (!sol)
-					{
-						lra.resolve_conflicts(solver.solution);
-						auto pt = lra.solution.begin();
-						for (int i : new_agents)
-						{
-							planned_paths[i] = *pt;
-							++pt;
-						}
-					}
-				 }
-			 }
-			 // lra.resolve_conflicts(planned_paths, k_robust);
-			 update_paths(planned_paths);
-		 }
-		 else
-		 {
-			 bool sol = solver.run(starts, goal_locations, time_limit);
-			 if (sol)
-			 {
-				 if (log)
-					 solver.save_constraints_in_goal_node(outfile + "/goal_nodes/" + std::to_string(timestep) + ".gv");
-				 update_paths(solver.solution);
-			 }
-			 else
-			 {
-				 lra.resolve_conflicts(solver.solution);
-				 update_paths(lra.solution);
-			 }
-		 }
-		 if (log)
-			 solver.save_search_tree(outfile + "/search_trees/" + std::to_string(timestep) + ".gv");
+     // solve
+     if (hold_endpoints || useDummyPaths)
+     {
+         vector<State> new_starts;
+         vector< vector<pair<int, int> > > new_goal_locations;
+         for (int i : new_agents)
+         {
+             new_starts.emplace_back(starts[i]);
+             new_goal_locations.emplace_back(goal_locations[i]);
+         }
+         vector<Path> planned_paths(num_of_drives);
+         solver.initial_rt.clear();
+         auto p = new_agents.begin();
+         for (int i = 0; i < num_of_drives; i++)
+         {
+             if (p == new_agents.end() || *p != i)
+             {
+                 planned_paths[i].resize(paths[i].size() - timestep);
+                 for (int t = 0; t < (int)planned_paths[i].size(); t++)
+                 {
+                     planned_paths[i][t] = paths[i][timestep + t];
+                     planned_paths[i][t].timestep = t;
+                 }
+                 solver.initial_rt.insertPath2CT(planned_paths[i]);
+             }
+             else
+                 ++p;
+         }
+         if (!new_agents.empty())
+         {
+             bool sol = solver.run(new_starts, new_goal_locations, time_limit);
+             if (sol)
+             {
+                 auto pt = solver.solution.begin();
+                 for (int i : new_agents)
+                 {
+                     planned_paths[i] = *pt;
+                     ++pt;
+                 }
+                 if (check_collisions(planned_paths))
+                 {
+                     cout << "COLLISIONS!" << endl;
+                     exit(-1);
+                 }
+             }
+             else
+             {
+                 if (timestep == 0)
+                        sol = solve_by_WHCA(planned_paths, new_starts, new_goal_locations);
+                if (!sol)
+                {
+                    lra.resolve_conflicts(solver.solution);
+                    auto pt = lra.solution.begin();
+                    for (int i : new_agents)
+                    {
+                        planned_paths[i] = *pt;
+                        ++pt;
+                    }
+                }
+             }
+         }
+         // lra.resolve_conflicts(planned_paths, k_robust);
+         update_paths(planned_paths);
+     }
+     else
+     {
+         bool sol = solver.run(starts, goal_locations, time_limit);
+         if (sol)
+         {
+             if (log)
+                 solver.save_constraints_in_goal_node(outfile + "/goal_nodes/" + std::to_string(timestep) + ".gv");
+             update_paths(solver.solution);
+         }
+         else
+         {
+             lra.resolve_conflicts(solver.solution);
+             update_paths(lra.solution);
+         }
+     }
+     if (log)
+         solver.save_search_tree(outfile + "/search_trees/" + std::to_string(timestep) + ".gv");
 
-	 }
-	 solver.save_results(outfile + "/solver.csv", std::to_string(timestep) + "," 
-										+ std::to_string(num_of_drives) + "," + std::to_string(seed));
+    }
+    solver.save_results(outfile + "/solver.csv", std::to_string(timestep) + ","
+                                    + std::to_string(num_of_drives) + "," + std::to_string(seed));
 }
+
+
+void BasicSystem::solve_by_groups()
+{
+    LRAStar lra(G, solver.path_planner);
+    lra.simulation_window = simulation_window;
+    lra.k_robust = k_robust;
+    solver.clear();
+    assert(solver.get_name() == "PBS" || solver.get_name() == "ECBS");
+    assert(!hold_endpoints && ! useDummyPaths);
+    //PriorityGraph initial_priorities;
+    update_initial_constraints(solver.initial_constraints);
+    // clustering
+    clustering.clear();
+    clustering.updateLocations(starts, goal_locations);
+    // clustering.writeDistanceMatrixToFile();
+    clustering.run();
+    vector<Path> planned_paths(num_of_drives);
+    double runtime = 0;
+    for (const auto& group : clustering.getClusters())
+    {
+        cout << group.size() << " agents" << endl;
+        vector<State> group_starts(group.size());
+        vector< vector<pair<int, int> > > group_goal_locations(group.size());
+        for (int i = 0; i < group.size(); i++)
+        {
+            group_starts[i] = starts[group[i]];
+            group_goal_locations[i] = goal_locations[group[i]];
+        }
+        bool sol = solver.run(group_starts, group_goal_locations, time_limit);
+        auto pt = solver.solution.begin();
+        for (int i : group)
+        {
+            planned_paths[i] = *pt;
+            ++pt;
+        }
+        runtime += solver.runtime;
+    }
+    // merge
+    assert(k_robust == 0);
+    int num_of_collsions = 0;
+    for (int i = 0; i < num_of_drives; i++)
+    {
+        for (int j = i + 1; j < num_of_drives; j++)
+        {
+            int size = min((int)min(planned_paths[i].size(), planned_paths[j].size()), planning_window);
+            for (int t = 0; t < size; t++)
+            {
+                int loc1 = planned_paths[i][t].location;
+                int loc2 = planned_paths[j][t].location;
+                if (loc1 == loc2 ||
+                    (timestep < size - 1
+                         && loc1 == planned_paths[j][t + 1].location
+                         && loc2 == planned_paths[i][t + 1].location))
+                {
+                    num_of_collsions++;
+                    break;
+                }
+            }
+        }
+    }
+    cout << num_of_collsions << " collisions" << endl;
+    lra.resolve_conflicts(planned_paths);
+    update_paths(lra.solution);
+
+    std::ofstream stats;
+    stats.open(outfile + "/collisions.csv", std::ios::app);
+    stats << runtime << "," << num_of_collsions << ","
+            << clustering.getClusters().front().size() << ","
+            << num_of_drives << endl;
+    stats.close();
+
+    if (log)
+        solver.save_search_tree(outfile + "/search_trees/" + std::to_string(timestep) + ".gv");
+
+    solver.save_results(outfile + "/solver.csv", std::to_string(timestep) + ","
+                                                 + std::to_string(num_of_drives) + "," + std::to_string(seed));
+}
+
+
 
 bool BasicSystem::solve_by_WHCA(vector<Path>& planned_paths,
 	const vector<State>& new_starts, const vector< vector<pair<int, int> > >& new_goal_locations)

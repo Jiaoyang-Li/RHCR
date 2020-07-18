@@ -115,7 +115,7 @@ void SortingSystem::update_goal_locations()
 int SortingSystem::assign_induct_station(int curr) const
 {
     int assigned_loc;
-	double min_cost = DBL_MAX;
+	auto min_cost = DBL_MAX;
 	for (auto induct : drives_in_induct_stations)
 	{
 		double cost = G.heuristics.at(induct.first)[curr] + c * induct.second;
@@ -146,8 +146,6 @@ void SortingSystem::simulate(int simulation_time)
     this->simulation_time = simulation_time;
     initialize();
 
-    Clustering cluster(G, planning_window, planning_window);
-
 	for (; timestep < simulation_time; timestep += simulation_window)
 	{
 		std::cout << "Timestep " << timestep << std::endl;
@@ -155,14 +153,10 @@ void SortingSystem::simulate(int simulation_time)
 		update_start_locations();
 		update_goal_locations();
 
-        cluster.updateLocations(starts, goal_locations);
-        cluster.writeDistanceMatrixToFile();
-        cluster.run();
-        cluster.clear();
         // return;
 
-		solve();
-
+		//solve();
+        solve_by_groups();
 		// move drives
 		auto new_finished_tasks = move();
 		std::cout << new_finished_tasks.size() << " tasks has been finished" << std::endl;
@@ -185,7 +179,7 @@ void SortingSystem::simulate(int simulation_time)
 		if (congested())
 		{
 			cout << "***** Too many traffic jams ***" << endl;
-			break;
+			//break;
 		}
 	}
 

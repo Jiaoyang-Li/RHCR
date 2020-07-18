@@ -56,13 +56,13 @@ public:
     MDD* getMDD(const vector<int>& landmarks); // landmarks = [start loc, goal loc1, goal loc2, ...]
     void clear();
 
-	MDDTable(const BasicGraph& G, int planning_window, int lookahead):
+	MDDTable(const BasicGraph& G, const int& planning_window, const int& lookahead):
 	    G(G), planning_window(planning_window), lookahead(lookahead) {}
 	~MDDTable() { clear(); }
 private:
     const BasicGraph& G;
-	int planning_window;
-    int lookahead;
+    const int& planning_window;
+    const int& lookahead;
 	unordered_map<vector<int>, MDD*> lookupTable;
 	void releaseMDDMemory();
     MDD* buildMDD(const vector<int>& landmarks);

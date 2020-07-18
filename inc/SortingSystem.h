@@ -1,7 +1,7 @@
 #pragma once
 #include "BasicSystem.h"
 #include "SortingGraph.h"
-#include "Clustering.h"
+
 
 class SortingSystem :
 	public BasicSystem

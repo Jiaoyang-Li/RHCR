@@ -26,6 +26,7 @@ void set_parameters(BasicSystem& system, const boost::program_options::variables
 	else
 		system.seed = (int)time(0);
 	srand(system.seed);
+	system.clustering.linkage_type = vm["linkage"].as<int>();
 }
 
 
@@ -109,7 +110,7 @@ int main(int argc, char** argv)
 		("id", po::value<bool>()->default_value(false), "independence detection")
 		("single_agent_solver", po::value<string>()->default_value("ASTAR"), "single-agent solver (ASTAR, SIPP)")
 		("lazyP", po::value<bool>()->default_value(false), "use lazy priority")
-		("simulation_time", po::value<int>()->default_value(5000), "run simulation")
+		("simulation_time", po::value<int>()->default_value(250), "run simulation")
 		("simulation_window", po::value<int>()->default_value(5), "call the planner every simulation_window timesteps")
 		("travel_time_window", po::value<int>()->default_value(0), "consider the traffic jams within the given window")
 		("planning_window", po::value<int>()->default_value(INT_MAX / 2),
@@ -128,7 +129,14 @@ int main(int argc, char** argv)
 		("prioritize_start", po::value<bool>()->default_value(true), "Prioritize waiting at start locations")
 		("suboptimal_bound", po::value<double>()->default_value(1), "Suboptimal bound for ECBS")
 		("log", po::value<bool>()->default_value(false), "save the search trees (and the priority trees)")
-		;
+        ("linkage", po::value<int>()->default_value(-1), "linkage type:\n"
+                                                         "      -1 uniformly at random\n"
+                                                         "       0 complete linkage\n"
+                                                         "       1 single linkage\n"
+                                                         "       2 unweighted average linkage\n"
+                                                         "       3 weighted average linkage\n"
+                                                         "       4 Ward's method")
+        ;
 	clock_t start_time = clock();
 	po::variables_map vm;
 	po::store(po::parse_command_line(argc, argv, desc), vm);

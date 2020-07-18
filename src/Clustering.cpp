@@ -13,45 +13,57 @@ void Clustering::run() //Wooju
     //Clear clusters?
     clusters.clear();
 
-
-    //Update distance matrix
-    getAllDistances();
-    real_2d_array xy;
-    xy.setlength(num_of_agents, num_of_agents);
-    for (int i = 0; i < num_of_agents; i++) {
-        for (int j = 0; j < num_of_agents; j++) {
-            xy(i, j) = distances[i][j];
+    if (linkage_type == -1)
+    {
+        clusters.resize(2);
+        for (int i = 0; i < num_of_agents; i++)
+        {
+            int label = rand() % 2;
+            clusters[label].push_back(i);
         }
     }
-    clusterizerstate clusterstate;
-    ahcreport report;
-    integer_1d_array cidx;
-    integer_1d_array cz;
-    clusterizercreate(clusterstate);
-    //Upper Triangle
-    clusterizersetdistances(clusterstate, xy, true);
-    //Single Linkage Algorithm
-    clusterizersetahcalgo(clusterstate, 1);
-    //5 is the number of clusters
-    clusterizerrunahc(clusterstate, report);
-
-    clusterizergetkclusters(report, 2, cidx, cz);
-    //printf("%s\n", cidx.tostring().c_str());
-    //printf("%s\n", report.z.tostring().c_str());
-
-    vector<int> cluster1, cluster2;
-    for (int index = 0; index < cidx.length(); ++index) {
-        //First cluster
-        if (cidx[index] == 0) {
-            cluster1.emplace_back(index);
+    else
+    {
+        //Update distance matrix
+        getAllDistances();
+        real_2d_array xy;
+        xy.setlength(num_of_agents, num_of_agents);
+        for (int i = 0; i < num_of_agents; i++) {
+            for (int j = 0; j < num_of_agents; j++) {
+                xy(i, j) = distances[i][j];
+            }
         }
-        //Second cluster
-        else if(cidx[index] == 1){
-            cluster2.emplace_back(index);
+        clusterizerstate clusterstate;
+        ahcreport report;
+        integer_1d_array cidx;
+        integer_1d_array cz;
+        clusterizercreate(clusterstate);
+        //Upper Triangle
+        clusterizersetdistances(clusterstate, xy, true);
+        clusterizersetahcalgo(clusterstate, linkage_type);
+        //5 is the number of clusters
+        clusterizerrunahc(clusterstate, report);
+
+        clusterizergetkclusters(report, 2, cidx, cz);
+        //printf("%s\n", cidx.tostring().c_str());
+        //printf("%s\n", report.z.tostring().c_str());
+
+        vector<int> cluster1, cluster2;
+        for (int index = 0; index < cidx.length(); ++index) {
+            //First cluster
+            if (cidx[index] == 0) {
+                cluster1.emplace_back(index);
+            }
+                //Second cluster
+            else if(cidx[index] == 1){
+                cluster2.emplace_back(index);
+            }
         }
+        clusters.push_back(cluster1);
+        clusters.push_back(cluster2);
     }
-    clusters.push_back(cluster1);
-    clusters.push_back(cluster2);
+
+
 
     int index = 0;
     //Show output

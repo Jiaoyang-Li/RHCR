@@ -19,3 +19,5 @@ vs_commands.txt
 *.xml
 *.iml
 out
+exp
+~*
