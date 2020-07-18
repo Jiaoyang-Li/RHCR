@@ -3,3 +3,11 @@ Release
 lifelong.vcxproj
 lifelong.vcxproj.filters
 lifelong.vcxproj.user
+experiments
+python-tools
+exp
+cmake*
+.idea
+idea.pptx
+~*
+maps
