@@ -8,7 +8,7 @@ make
 
 Then, you are able to run the code:
 ```
-./lifelong -m maps/sorting_e=inf.grid -k 800 --scenario=SORTING --simulation_window=5 --planning_window=10 --seed=0
+./lifelong -m maps/sorting_e=inf.grid -k 800 --scenario=SORTING --simulation_window=5 --planning_window=10 --simulation_time=250 --output=../exp/single-planning_window=4 --linkage=1
 ```
 
 You can find details and explanations for all parameters with:
