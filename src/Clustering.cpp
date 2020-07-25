@@ -65,24 +65,16 @@ void Clustering::run() //Wooju
 
 
 
-    int index = 0;
-    //Show output
-    for (auto vec : clusters) {
-        std::cout << "Cluster " << index << ": " ;
-        for (auto i : vec) {
-            std::cout << i << " ";
-        }
-        ++index;
-        std::cout << endl;
-    }
-    /*std::cout << std::endl;
-    std::cout << "Cluster 2: ";
-    for (auto vec : cluster2) {
-        std::cout << vec << " ";
-    }
-    std::cout << std::endl;*/
-
-
+    //int index = 0;
+    ////Show output
+    //for (auto vec : clusters) {
+    //    std::cout << "Cluster " << index << ": " ;
+    //    for (auto i : vec) {
+    //        std::cout << i << " ";
+    //    }
+    //    ++index;
+    //    std::cout << endl;
+    //}
 
 }
 

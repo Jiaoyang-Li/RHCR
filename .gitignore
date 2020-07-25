@@ -9,6 +9,8 @@ CMakeCache.txt
 .gitignore
 aws.pem
 .vs
+.vscode
+build
 CMakeFiles
 cmake-build-debug
 cmake-build-release
