@@ -14,6 +14,7 @@ void Clustering::run() //Wooju
     //Clear clusters
     clusters.clear();
 
+
     if (linkage_type == -1)
     {
         clusters.resize(2);
