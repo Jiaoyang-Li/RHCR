@@ -58,9 +58,6 @@ void Clustering::run() //Wooju
         deleteTree(root);
 
 
-
-
-
         vector<int> cluster1, cluster2;
         for (int index = 0; index < cidx.length(); ++index) {
             //First cluster
@@ -141,10 +138,6 @@ void Clustering :: subcluster(integer_2d_array& arr, int currIndex, Node* headNo
         //std::cout << "INDEX: " << currIndex << " " << std::endl;
     }
 }
-
-
-
-
 
 void Clustering::getAllDistances(){
     for (int i = 0; i < num_of_agents; ++i) {
