@@ -4,13 +4,14 @@
 #include <stdio.h>
 #include <math.h>
 #include "dataanalysis.h"
+#include "node.h"
+#include <queue>
 
 using namespace alglib;
 
 void Clustering::run() //Wooju
 {
-
-    //Clear clusters?
+    //Clear clusters
     clusters.clear();
 
     if (linkage_type == -1)
@@ -48,6 +49,17 @@ void Clustering::run() //Wooju
         //printf("%s\n", cidx.tostring().c_str());
         //printf("%s\n", report.z.tostring().c_str());
 
+        Node* root = new Node(-1, nullptr, nullptr, nullptr);
+
+        subcluster(report.z, report.z.rows() - 1, root);
+
+        inorderTraversal(root);
+        deleteTree(root);
+
+
+
+
+
         vector<int> cluster1, cluster2;
         for (int index = 0; index < cidx.length(); ++index) {
             //First cluster
@@ -62,20 +74,6 @@ void Clustering::run() //Wooju
         clusters.push_back(cluster1);
         clusters.push_back(cluster2);
     }
-
-
-
-    //int index = 0;
-    ////Show output
-    //for (auto vec : clusters) {
-    //    std::cout << "Cluster " << index << ": " ;
-    //    for (auto i : vec) {
-    //        std::cout << i << " ";
-    //    }
-    //    ++index;
-    //    std::cout << endl;
-    //}
-
 }
 
 void Clustering::writeDistanceMatrixToFile()
@@ -101,6 +99,52 @@ void Clustering::writeDistanceMatrixToFile()
     output.close();
     cout << (double)(clock() - start_time) / CLOCKS_PER_SEC << "s" << endl;
 }
+
+//Use a BFS iterative method
+// 1. Input current [int, int] into queue(FIFO)
+// 2. Pop and then input child nodes right first, left second
+// 3. Continue until queue is empty and arr is empty as well
+void Clustering :: subcluster(integer_2d_array& arr, int currIndex, Node* headNode)
+{
+    std::queue<ae_int_t*> qe;
+    std::queue<Node*> listofNodes;
+    const int numofRows = arr.rows();
+
+    qe.push(arr[currIndex]);
+    listofNodes.push(headNode);
+
+    while (!qe.empty()) {
+        ae_int_t* val = qe.front();
+        qe.pop();
+        //std::cout << "VAL:" << val[0] << " " << val[1] << std::endl;
+        Node* curr = listofNodes.front();
+        listofNodes.pop();
+
+        Node* rightHead = new Node(val[1], curr, nullptr, nullptr);
+        Node* leftHead = new Node(val[0], curr, nullptr, nullptr);
+        curr->rightChild = rightHead;
+        curr->leftChild = leftHead;
+
+        //Right Child has a subcluster
+        if (val[1] > numofRows) {
+            qe.push(arr[--currIndex]);
+            listofNodes.push(rightHead);
+            //std::cout << "RIGHT: " << val[1] << std::endl;
+        }
+        //Left Child has a subcluster
+        if (val[0] > numofRows) {
+            qe.push(arr[--currIndex]);
+            listofNodes.push(leftHead);
+            //std::cout << "LEFT: " << val[0] << std::endl;
+        }
+        //std::cout << "INDEX: " << currIndex << " " << std::endl;
+    }
+}
+
+
+
+
+
 void Clustering::getAllDistances(){
     for (int i = 0; i < num_of_agents; ++i) {
         for (int j = 0; j < num_of_agents; ++j) {
@@ -171,4 +215,30 @@ void Clustering::updateLocations(const vector<State>& starts,
         }
         mdds[i] = mdd_helper.getMDD(landmarks[i]);
     }
+}
+
+//Traversal the tree in order
+void Clustering:: inorderTraversal(Node* node)
+{
+    if (node == nullptr)
+    {
+        return;
+    }
+
+    inorderTraversal(node->leftChild);
+    std::cout << node->val << " ";
+    inorderTraversal(node->rightChild);
+}
+
+//Delete tree with root
+void Clustering::deleteTree(Node* node)
+{
+    if (node == nullptr)
+    {
+        return;
+    }
+
+    deleteTree(node->leftChild);
+    deleteTree(node->rightChild);
+    delete node;
 }
