@@ -49,8 +49,14 @@ private:
     int getFirstGoalVertex(int agent) const { return landmarks[agent][1]; }
     void getAllDistances();
 
+
+    //Tree
     void inorderTraversal(Node* node);
     void deleteTree(Node* node);
+    void getChildNodes(Node* node, std::vector<int>& cluster, int limit);
+    void sortclusters(Node* root, int numberofClusters, std::vector<std::vector<int>>& clusters, int limit);
+    void print2dvector(std::vector<std::vector<int>>& vectors);
+    bool compareClusters(std::vector<std::vector<int>>& vec1, std::vector<std::vector<int>>& vec2);
 
 };
 

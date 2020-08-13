@@ -40,24 +40,29 @@ void Clustering::run() //Wooju
         integer_1d_array cidx;
         integer_1d_array cz;
         clusterizercreate(clusterstate);
+
         //Upper Triangle
         clusterizersetdistances(clusterstate, xy, true);
         clusterizersetahcalgo(clusterstate, linkage_type);
-        //5 is the number of clusters
+
         clusterizerrunahc(clusterstate, report);
 
-        clusterizergetkclusters(report, 2, cidx, cz);
         //printf("%s\n", cidx.tostring().c_str());
         //printf("%s\n", report.z.tostring().c_str());
 
+        //Manual SubClustering
         Node* root = new Node(-1, nullptr, nullptr, nullptr);
 
         subcluster(report.z, report.z.rows() - 1, root);
+        std::vector<std::vector<int>> kclusters;
 
-        inorderTraversal(root);
+        sortclusters(root, 2, clusters, report.z.rows());
+
+        //inorderTraversal(root);
         deleteTree(root);
 
-
+        //K SubClustering 
+        clusterizergetkclusters(report, 2, cidx, cz);
         vector<int> cluster1, cluster2;
         for (int index = 0; index < cidx.length(); ++index) {
             //First cluster
@@ -71,6 +76,10 @@ void Clustering::run() //Wooju
         }
         clusters.push_back(cluster1);
         clusters.push_back(cluster2);
+
+
+        std::cout << "TWO CLUSTERS ARE THE SAME: " << std::boolalpha << compareClusters(kclusters, clusters) << "\n\n";
+
     }
 }
 
@@ -137,6 +146,33 @@ void Clustering :: subcluster(integer_2d_array& arr, int currIndex, Node* headNo
         }
         //std::cout << "INDEX: " << currIndex << " " << std::endl;
     }
+}
+void Clustering::getChildNodes(Node* node, std::vector<int>& cluster, int limit)
+{
+    if (node == nullptr) {
+        return;
+    }
+
+    getChildNodes(node->leftChild, cluster, limit);
+    if (node->val <= limit) {
+        cluster.push_back(node->val);
+    }
+    getChildNodes(node->rightChild, cluster, limit);
+}
+
+void Clustering::sortclusters(Node* root, int numberofClusters, std::vector<std::vector<int>>& clusters, int limit) {
+    Node* left = root->leftChild;
+    Node* right = root->rightChild;
+
+    std::vector<int> temp;
+
+
+    getChildNodes(left, temp, limit);
+    clusters.push_back(temp);
+    temp.clear();
+    getChildNodes(right, temp, limit);
+    clusters.push_back(temp);
+
 }
 
 void Clustering::getAllDistances(){
@@ -235,4 +271,32 @@ void Clustering::deleteTree(Node* node)
     deleteTree(node->leftChild);
     deleteTree(node->rightChild);
     delete node;
+}
+
+bool Clustering::compareClusters(std::vector<std::vector<int>>& vec1, std::vector<std::vector<int>>& vec2) {
+    for (auto& vec : vec1) {
+        std::sort(vec.begin(), vec.end());
+    }
+    for (auto& vec : vec2) {
+        std::sort(vec.begin(), vec.end());
+    }
+    int x = 0;
+    int y = 0;
+
+    for (int i = 0; i < vec1.size(); ++i) {
+        for (int j = 0; j < vec1[i].size(); ++j) {
+            if (vec1[i][j] != vec2[i][j]) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+void Clustering::print2dvector(std::vector<std::vector<int>>& vectors) {
+    for (auto vector : vectors) {
+        for (auto vec : vector) {
+            std::cout << vec << " ";
+        }
+        std::cout << std::endl;
+    }
 }
