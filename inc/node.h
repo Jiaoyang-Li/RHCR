@@ -6,8 +6,10 @@ struct Node{
         this->parent = parent;
         this-> leftChild = leftChild;
         this->rightChild = rightChild;
+        this->numofLeafChilds = 0;
     }
     int val;
+    int numofLeafChilds;
     Node* parent;
     Node* leftChild;
     Node* rightChild;

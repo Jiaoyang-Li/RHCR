@@ -14,7 +14,6 @@ void Clustering::run() //Wooju
     //Clear clusters
     clusters.clear();
 
-
     if (linkage_type == -1)
     {
         clusters.resize(2);
@@ -50,61 +49,42 @@ void Clustering::run() //Wooju
         //printf("%s\n", cidx.tostring().c_str());
         //printf("%s\n", report.z.tostring().c_str());
 
-        //Manual SubClustering
+        //Manual Subclustering
+        //printf("%s\n", report.z.tostring().c_str());
+
+        std::vector<Node*> clusteredNodes;
         Node* root = new Node(-1, nullptr, nullptr, nullptr);
 
         subcluster(report.z, report.z.rows() - 1, root);
-        std::vector<std::vector<int>> kclusters;
+        calcLeafNodesNum(root);
 
-        sortclusters(root, 2, clusters, report.z.rows());
+        //CHANGE NUMBER TO CHANGE HOW MANY POINTS WILL BE IN A CLUSTER
+        FillClusterNodes(root, clusteredNodes, 100);
+        nodesIntoClusters(clusteredNodes, clusters, report.z.rows());
+        print2dvector(clusters);
 
-        //inorderTraversal(root);
+
         deleteTree(root);
 
-        //K SubClustering 
-        clusterizergetkclusters(report, 2, cidx, cz);
-        vector<int> cluster1, cluster2;
-        for (int index = 0; index < cidx.length(); ++index) {
-            //First cluster
-            if (cidx[index] == 0) {
-                cluster1.emplace_back(index);
-            }
-                //Second cluster
-            else if(cidx[index] == 1){
-                cluster2.emplace_back(index);
-            }
-        }
-        clusters.push_back(cluster1);
-        clusters.push_back(cluster2);
-
-
-        std::cout << "TWO CLUSTERS ARE THE SAME: " << std::boolalpha << compareClusters(kclusters, clusters) << "\n\n";
+        ////K SubClustering 
+        //std::vector<std::vector<int>> kclusters;
+        //clusterizergetkclusters(report, 2, cidx, cz);
+        //vector<int> cluster1, cluster2;
+        //for (int index = 0; index < cidx.length(); ++index) {
+        //    //First cluster
+        //    if (cidx[index] == 0) {
+        //        cluster1.emplace_back(index);
+        //    }
+        //        //Second cluster
+        //    else if(cidx[index] == 1){
+        //        cluster2.emplace_back(index);
+        //    }
+        //}
+        //kclusters.push_back(cluster1);
+        //kclusters.push_back(cluster2);
+        //std::cout << "TWO CLUSTERS ARE THE SAME: " << std::boolalpha << compareClusters(kclusters, clusters) << "\n\n";
 
     }
-}
-
-void Clustering::writeDistanceMatrixToFile()
-{
-    string path = "../python-tools/";
-    std::ofstream output;
-    output.open(path + "distances.csv", std::ios::out);
-    for (int i = 0; i < num_of_agents; i++)
-    {
-        for (int j = 0; j < num_of_agents - 1; j++)
-        {
-            output << getDistance(i, j) << ",";
-        }
-        output << getDistance(i, num_of_agents - 1) << endl;
-    }
-    output.close();
-    output.open(path + "agents.csv", std::ios::out);
-    output << "start,goal" << endl;
-    for (int i = 0; i < num_of_agents; i++)
-    {
-        output << getStartVertex(i) << "," << getFirstGoalVertex(i) << endl;
-    }
-    output.close();
-    cout << (double)(clock() - start_time) / CLOCKS_PER_SEC << "s" << endl;
 }
 
 //Use a BFS iterative method
@@ -147,32 +127,50 @@ void Clustering :: subcluster(integer_2d_array& arr, int currIndex, Node* headNo
         //std::cout << "INDEX: " << currIndex << " " << std::endl;
     }
 }
-void Clustering::getChildNodes(Node* node, std::vector<int>& cluster, int limit)
+void Clustering::findLeafNodes(Node* node, std::vector<int>& cluster, int limit)
 {
     if (node == nullptr) {
         return;
     }
 
-    getChildNodes(node->leftChild, cluster, limit);
+    findLeafNodes(node->leftChild, cluster, limit);
     if (node->val <= limit) {
         cluster.push_back(node->val);
     }
-    getChildNodes(node->rightChild, cluster, limit);
+    findLeafNodes(node->rightChild, cluster, limit);
 }
 
-void Clustering::sortclusters(Node* root, int numberofClusters, std::vector<std::vector<int>>& clusters, int limit) {
-    Node* left = root->leftChild;
-    Node* right = root->rightChild;
+int Clustering::calcLeafNodesNum(Node* node)
+{
+    if (node->leftChild == nullptr && node->rightChild == nullptr)
+    {
+        node->numofLeafChilds = 1;
+        return 1;
+    }
+    int leftc = calcLeafNodesNum(node->leftChild);
+    int rightc = calcLeafNodesNum(node->rightChild);
+    node->numofLeafChilds = leftc + rightc;
+    return node->numofLeafChilds;
+}
 
+void Clustering::FillClusterNodes(Node* root, std::vector<Node*>& clusteredNodes, int limit)
+{
+    if (root->numofLeafChilds < limit)
+    {
+        clusteredNodes.push_back(root);
+        return;
+    }
+    FillClusterNodes(root->leftChild, clusteredNodes, limit);
+    FillClusterNodes(root->rightChild, clusteredNodes, limit);
+}
+void Clustering::nodesIntoClusters(std::vector<Node*>& clusteredNodes, std::vector<std::vector<int>>& clusters, int limit)
+{
     std::vector<int> temp;
-
-
-    getChildNodes(left, temp, limit);
-    clusters.push_back(temp);
-    temp.clear();
-    getChildNodes(right, temp, limit);
-    clusters.push_back(temp);
-
+    for (auto node : clusteredNodes) {
+        findLeafNodes(node, temp, limit);
+        clusters.push_back(temp);
+        temp.clear();
+    }
 }
 
 void Clustering::getAllDistances(){
@@ -227,6 +225,30 @@ int Clustering::getDistance(int a1, int a2)
 }
 
 
+void Clustering::writeDistanceMatrixToFile()
+{
+    string path = "../python-tools/";
+    std::ofstream output;
+    output.open(path + "distances.csv", std::ios::out);
+    for (int i = 0; i < num_of_agents; i++)
+    {
+        for (int j = 0; j < num_of_agents - 1; j++)
+        {
+            output << getDistance(i, j) << ",";
+        }
+        output << getDistance(i, num_of_agents - 1) << endl;
+    }
+    output.close();
+    output.open(path + "agents.csv", std::ios::out);
+    output << "start,goal" << endl;
+    for (int i = 0; i < num_of_agents; i++)
+    {
+        output << getStartVertex(i) << "," << getFirstGoalVertex(i) << endl;
+    }
+    output.close();
+    cout << (double)(clock() - start_time) / CLOCKS_PER_SEC << "s" << endl;
+}
+
 void Clustering::updateLocations(const vector<State>& starts,
                                  const vector< vector<pair<int, int> > >& goal_locations)
 {
@@ -256,7 +278,7 @@ void Clustering:: inorderTraversal(Node* node)
     }
 
     inorderTraversal(node->leftChild);
-    std::cout << node->val << " ";
+    std::cout << "VAL: " << node->val << " NUMCHILD: " << node->numofLeafChilds << std::endl;
     inorderTraversal(node->rightChild);
 }
 
@@ -267,7 +289,6 @@ void Clustering::deleteTree(Node* node)
     {
         return;
     }
-
     deleteTree(node->leftChild);
     deleteTree(node->rightChild);
     delete node;
@@ -293,10 +314,11 @@ bool Clustering::compareClusters(std::vector<std::vector<int>>& vec1, std::vecto
     return true;
 }
 void Clustering::print2dvector(std::vector<std::vector<int>>& vectors) {
+    int sum = 0;
     for (auto vector : vectors) {
-        for (auto vec : vector) {
-            std::cout << vec << " ";
-        }
-        std::cout << std::endl;
+        /*for (auto vec : vector) {
+            std::cerr << vec << " ";
+        }*/
+        std::cout << "CLUSTER SIZE: " << vector.size() << "\n";
     }
 }

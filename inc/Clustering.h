@@ -19,10 +19,10 @@ public:
 
     void run(); 
 
-    void updateLocations(const vector<State>& starts,
-              const vector< vector<pair<int, int> > >& goal_locations);
+    void updateLocations(const std::vector<State>& starts,
+              const std::vector< std::vector<std::pair<int, int> > >& goal_locations);
 
-
+    //Subclusters the 2d array result into a Node tree
     void subcluster(integer_2d_array& arr, int currIndex, Node* headNode);
 
     void clear() { distances.clear(); }
@@ -31,14 +31,14 @@ public:
         G(G), mdd_helper(G, planning_window,lookahead), lookahead(lookahead) {}
 
     void writeDistanceMatrixToFile();
-    std::vector<vector<int>>& getClusters() { return clusters; }
+    std::vector<std::vector<int>>& getClusters() { return clusters; }
 private:
     const BasicGraph& G;
     MDDTable mdd_helper;
     const int& lookahead;
-    std::vector<vector<int>> landmarks;
-    std::vector<vector<int>> distances;
-    std::vector<vector<int>> clusters;
+    std::vector<std::vector<int>> landmarks;
+    std::vector<std::vector<int>> distances;
+    std::vector<std::vector<int>> clusters;
     std::vector<MDD*> mdds;
 
     clock_t start_time;
@@ -50,12 +50,31 @@ private:
     void getAllDistances();
 
 
-    //Tree
-    void inorderTraversal(Node* node);
+    //Calculate all node's number of leaf chlidren
+    //Fills each node with data
+    int calcLeafNodesNum(Node* node);
+
+    //Find Nodes that have lower num of leaf children than the limit
+    //These nodes will be the head of different subclusters
+    void FillClusterNodes(Node* root, std::vector<Node*>& clusteredNodes, int limit);
+
+    //Find all the leaf nodes under this node and add them to the cluster
+    void findLeafNodes(Node* node, std::vector<int>& cluster, int limit);
+
+    //Turn the node trees into a List of Lists to subcluster them properly
+    void nodesIntoClusters(std::vector<Node*>& clusteredNodes, std::vector<std::vector<int>>& clusters, int limit);
+
+    //Deletes the tree
     void deleteTree(Node* node);
-    void getChildNodes(Node* node, std::vector<int>& cluster, int limit);
-    void sortclusters(Node* root, int numberofClusters, std::vector<std::vector<int>>& clusters, int limit);
+
+    //In order traversal showing the labels of each node in the graph
+    void inorderTraversal(Node* node);
+
+    //Print the results of the clusters
     void print2dvector(std::vector<std::vector<int>>& vectors);
+
+    //Compares two clusters
+    //Returns true if clusters are the same
     bool compareClusters(std::vector<std::vector<int>>& vec1, std::vector<std::vector<int>>& vec2);
 
 };
