@@ -155,7 +155,7 @@ int Clustering::calcLeafNodesNum(Node* node)
 
 void Clustering::FillClusterNodes(Node* root, std::vector<Node*>& clusteredNodes, int limit)
 {
-    if (root->numofLeafChilds < limit)
+    if (root->numofLeafChilds <= limit)
     {
         clusteredNodes.push_back(root);
         return;
