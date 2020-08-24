@@ -478,7 +478,7 @@ void BasicSystem::save_results()
     output.close();
 
     // tasks
-    output.open(outfile + "\\tasks.txt", std::ios::out);
+    output.open(outfile + "/tasks.txt", std::ios::out);
     output << num_of_drives << std::endl;
     for (int k = 0; k < num_of_drives; k++)
     {
@@ -500,7 +500,7 @@ void BasicSystem::save_results()
     output.close();
 
     // paths
-    output.open(outfile + "\\paths.txt", std::ios::out);
+    output.open(outfile + "/paths.txt", std::ios::out);
     output << num_of_drives << std::endl;
     for (int k = 0; k < num_of_drives; k++)
     {
