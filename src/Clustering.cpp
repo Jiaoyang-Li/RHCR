@@ -9,17 +9,20 @@
 
 using namespace alglib;
 
-void Clustering::run() //Wooju
+//Wooju
+void Clustering::run() 
 {
     //Clear clusters
     clusters.clear();
 
+    //Randomized
     if (linkage_type == -1)
     {
-        clusters.resize(2);
-        for (int i = 0; i < num_of_agents; i++)
-        {
-            int label = rand() % 2;
+        double equalSize = ceil(num_of_agents / 100.0);
+        int IntSize = (int)equalSize;
+        clusters.resize(IntSize);
+        for (int i = 0; i < num_of_agents; i++){
+            int label = rand() % IntSize;
             clusters[label].push_back(i);
         }
     }
@@ -58,7 +61,7 @@ void Clustering::run() //Wooju
         subcluster(report.z, report.z.rows() - 1, root);
         calcLeafNodesNum(root);
 
-        //CHANGE NUMBER TO CHANGE HOW MANY POINTS WILL BE IN A CLUSTER
+        //CHANGE NUMBER TO CHANGE HOW MANY MAX POINTS WILL BE IN A CLUSTER
         FillClusterNodes(root, clusteredNodes, 100);
         nodesIntoClusters(clusteredNodes, clusters, report.z.rows());
         print2dvector(clusters);
@@ -319,6 +322,6 @@ void Clustering::print2dvector(std::vector<std::vector<int>>& vectors) {
         /*for (auto vec : vector) {
             std::cerr << vec << " ";
         }*/
-        std::cout << "CLUSTER SIZE: " << vector.size() << "\n";
+        //std::cout << "CLUSTER SIZE: " << vector.size() << "\n";
     }
 }
