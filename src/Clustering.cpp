@@ -18,13 +18,15 @@ void Clustering::run()
     //Randomized
     if (linkage_type == -1)
     {
-        double equalSize = ceil(num_of_agents / 100.0);
+        //add one to have a greater chance of having less than 100 agents in a cluster
+        double equalSize = ceil(num_of_agents / 100.0) + 1;
         int IntSize = (int)equalSize;
         clusters.resize(IntSize);
         for (int i = 0; i < num_of_agents; i++){
             int label = rand() % IntSize;
             clusters[label].push_back(i);
         }
+        //std::cerr << "SIZE: " << IntSize << "\n";
     }
     else
     {
