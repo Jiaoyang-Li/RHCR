@@ -1,6 +1,8 @@
 # Lifelong-MAPF-Simulation
 
 The code requires the external library BOOST (https://www.boost.org/). After you installed BOOST and downloaded the source code, go into the directory of the source code and compile it with CMake: 
+- Works for Boost versions below 1.73
+
 ```
 cmake .
 make
