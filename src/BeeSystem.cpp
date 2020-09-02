@@ -23,18 +23,51 @@ bool BeeSystem::load_task_assignments(string fname)
 	int id, i;
 	char temp;
 	task_sequences.resize(G.initial_locations.size());
+	list<int> deadlines;
 	while (getline(myfile, line)) 
 	{
 		std::istringstream iss(line);
 		iss >> i >> temp;
 		if (i == 0)
 		{
-			task_sequences.emplace_back();
+			list<pair<int, int>> task_sequence;
 			while (iss >> id)
 			{
-				task_sequences.back().emplace_back(G.flowers[id - 1], G.flower_time_windows[id - 1].first);
+                task_sequence.emplace_back(G.flowers[id - 1], G.flower_time_windows[id - 1].first);
 			}
-			task_sequences.back().emplace_back(G.entrance, 0);
+            task_sequence.emplace_back(G.entrance, 0);
+			auto d = deadlines.begin();
+            auto p = task_sequences.begin() + G.initial_locations.size();
+            while(d != deadlines.end())
+            {
+                if (*d > G.flower_time_windows[id - 1].second ||
+                        (*d == G.flower_time_windows[id - 1].second && p->front().second > task_sequence.front().second))
+                {
+                    deadlines.insert(d, G.flower_time_windows[id - 1].second);
+                    task_sequences.insert(p, task_sequence);
+                    break;
+                }
+                ++d;
+                ++p;
+            }
+            if (d == deadlines.end())
+            {
+                deadlines.push_back(G.flower_time_windows[id - 1].second);
+                task_sequences.push_back(task_sequence);
+            }
+            /*
+			bool insert = false;
+            for (auto p = task_sequences.begin() + G.initial_locations.size(); p != task_sequences.end(); ++p)
+            {
+                if (p->front().second > task_sequence.front().second)
+                {
+                    task_sequences.insert(p, task_sequence);
+                    insert = true;
+                    break;
+                }
+            }
+            if (!insert)
+                task_sequences.push_back(task_sequence);*/
 		}
 		else
 		{
@@ -48,6 +81,14 @@ bool BeeSystem::load_task_assignments(string fname)
 	}
 	myfile.close();
 	loading_time = (clock() - t) * 1.0 / CLOCKS_PER_SEC;
+	/*cout << "release time ";
+    for (auto p = task_sequences.begin() + G.initial_locations.size(); p != task_sequences.end(); ++p)
+        cout << p->front().second << "->";
+    cout << endl;
+    cout << "deadline ";
+    for (auto d :deadlines)
+        cout << d << "->";
+    cout << endl;*/
 	return true;
 }
 
