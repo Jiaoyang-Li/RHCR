@@ -23,8 +23,9 @@ public:
 
     void update_number_of_lower_nodes(vector<int>& lower_nodes, int node) const;
 
+    //TODO: Add Together
     PGraph_t G;
-
+    PriorityGraph& operator+=(const PriorityGraph& other);
     // TODO:  connected components
 };
 

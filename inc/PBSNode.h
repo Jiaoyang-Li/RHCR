@@ -55,6 +55,7 @@ public:
     list< pair<int, Path> > paths; // <agent_id, path>
     std::pair<int, int> priority; // a1 < a2
 
+	//Priority graph
     PriorityGraph priorities;
 
 	double g_val;

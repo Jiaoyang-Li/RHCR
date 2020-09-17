@@ -542,7 +542,6 @@ bool PBS::generate_root_node()
     if (screen == 2)
         std::cout << "Generate root CT node ..." << std::endl;
 
-    //dummy_start->priorities.copy(initial_priorities);
 
     if (!initial_paths.empty())
     {
@@ -558,6 +557,10 @@ bool PBS::generate_root_node()
         }
     }
 
+    if (!initial_priorities.empty())
+    {
+        dummy_start->priorities.copy(initial_priorities);
+    }
 
     for (int i = 0; i < num_of_agents; i++) 
 	{
@@ -669,6 +672,8 @@ bool PBS::run(const vector<State>& starts,
     if (!generate_root_node())
         return false;
 
+    
+
     if (dummy_start->num_of_collisions == 0) //no conflicts at the root node
     {// found a solution (and finish the while look)
         solution_found = true;
@@ -691,7 +696,7 @@ bool PBS::run(const vector<State>& starts,
 		update_paths(curr);
 
         if (curr->conflicts.empty())
-        {// found a solution (and finish the while look)
+        {// found a solution (and finish the while loop)
             solution_found = true;
             solution_cost = curr->g_val;
             best_node = curr;
@@ -701,6 +706,8 @@ bool PBS::run(const vector<State>& starts,
 		choose_conflict(*curr);
 
         update_best_node(curr);
+        //best_node->print_priorities();
+
 
 		 //Expand the node
 		HL_num_expanded++;

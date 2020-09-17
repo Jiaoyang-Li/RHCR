@@ -1,7 +1,6 @@
 #include "PriorityGraph.h"
 #include <boost/graph/copy.hpp>
 
-
 void PriorityGraph::clear()
 {
     G.clear();
@@ -26,7 +25,11 @@ void PriorityGraph::copy(const PriorityGraph& other, const vector<bool>& exclude
         }
     }
 }
+PriorityGraph& PriorityGraph:: operator+=(const PriorityGraph& other) {
 
+    this->G.insert(other.G.begin(), other.G.end());
+    return *this;
+}
 void PriorityGraph::add(int from, int to) // from is lower than to
 {
     G[from].insert(to);

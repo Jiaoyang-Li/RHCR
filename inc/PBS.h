@@ -72,8 +72,8 @@ private:
     list<PBSNode*> allNodes_table;
     list<PBSNode*> dfs;
 
-   //  vector<State> starts;
-    // vector< vector<int> > goal_locations;
+    //vector<State> starts;
+    //vector< vector<int> > goal_locations;
 
     std::clock_t start;
 

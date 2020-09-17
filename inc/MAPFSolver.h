@@ -23,6 +23,9 @@ public:
 	// initial data
 	ReservationTable initial_rt;
 	vector<Path> initial_paths;
+
+	PriorityGraph initial_priorities;
+
     list< tuple<int, int, int> > initial_constraints; // <agent, location, timestep>
 	list<const Path*> initial_soft_path_constraints; // the paths that all agents try to avoid
     // only this agent can stay in this location during before this timestep.
@@ -49,7 +52,7 @@ public:
 
     const BasicGraph& G;
     vector<State> starts;
-    vector< vector<pair<int, int> > > goal_locations;
+    vector<vector<pair<int, int>>> goal_locations;
     int num_of_agents;
 	int time_limit;
 
