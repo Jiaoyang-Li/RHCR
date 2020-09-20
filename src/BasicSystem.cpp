@@ -272,6 +272,7 @@ void BasicSystem::update_initial_constraints(list< tuple<int, int, int> >& initi
 }
 
 
+
 bool BasicSystem::check_collisions(const vector<Path>& input_paths) const
 {
 	for (int a1 = 0; a1 < (int)input_paths.size(); a1++)
@@ -731,8 +732,8 @@ void BasicSystem::solve_by_groups()
     //Reindex agents
     //dummy_start is root node
     //PBS -> Initial Paths 
-    // First Merging All Together
-    // Same Order 
+    //First Merging All Together
+    //Same Order 
 
     vector<State> new_starts(num_of_drives);
     vector< vector<pair<int, int>>> new_goals(num_of_drives);
@@ -760,7 +761,7 @@ void BasicSystem::solve_by_groups()
     runtime += solver.runtime;
 
 
-    //Collisions
+    //Check for Collisions
     assert(k_robust == 0);
     int num_of_collsions = 0;
     for (int i = 0; i < num_of_drives; i++)

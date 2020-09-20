@@ -7,7 +7,6 @@ void PBSNode::clear()
     priorities.clear();
 }
 
-
 void PBSNode::print_priorities() const
 {
     cout << "Priorities: ";

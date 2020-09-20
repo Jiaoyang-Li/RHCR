@@ -9,7 +9,8 @@
 
 using namespace alglib;
 
-//Wooju
+
+//Wooju Yim
 void Clustering::run() 
 {
     //Clear clusters
