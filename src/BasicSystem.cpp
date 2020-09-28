@@ -707,6 +707,7 @@ void BasicSystem::solve_by_groups()
     vector<Path> planned_paths(num_of_drives);
     double runtime = 0;
     int numofClusters = 0;
+    PriorityGraph copyPriorities;
     //Plan path for groups
     for (const auto& group : clustering.getClusters())
     {
@@ -725,41 +726,49 @@ void BasicSystem::solve_by_groups()
             ++pt;
         }
         //Merge Priorities G together
-        //solver.initial_priorities += static_cast<PBS>(solver).best_node.priorities;
+        for (auto g : solver.best_node->priorities.G) {
+            std::cerr << "First: " << g.first << "\n";
+            std::cerr << "Set Values: \n";
+            for (auto itr = g.second.begin(); itr != g.second.end(); itr++)
+                std::cerr << (*itr) << " ";
+            std::cerr << "\n";
+        }
+        //copyPriorities += solver.best_node->priorities;
         runtime += solver.runtime;
         ++numofClusters;
     }
+    
     //Reindex agents
     //dummy_start is root node
     //PBS -> Initial Paths 
     //First Merging All Together
     //Same Order 
-
     vector<State> new_starts(num_of_drives);
-    vector< vector<pair<int, int>>> new_goals(num_of_drives);
+    vector<vector<pair<int, int>>> new_goals(num_of_drives);
+    vector<int> orders(num_of_drives);
+    solver.initial_paths.resize(num_of_drives);
+    //solver.initial_priorities.copy(copyPriorities);
     int newIndex = 0;
     for (const auto& group : clustering.getClusters()){
         for (int i = 0; i < group.size(); i++) {
-            /*new_starts[group[i]] = starts[group[i]];
-            new_goals[group[i]] = goal_locations[group[i]];
-            solver.initial_paths[group[i]] = planned_paths[group[i]];*/
             new_starts[newIndex] = starts[group[i]];
             new_goals[newIndex] = goal_locations[group[i]];
-            solver.initial_paths.push_back(planned_paths[group[i]]);
+            solver.initial_paths[newIndex] = planned_paths[group[i]];
+            orders[newIndex] = group[i];
             ++newIndex;
         }
     }
 
+
     //Uses planned_path in the group_starts, in the root node
     bool sol = solver.run(new_starts, new_goals, time_limit);
     auto pt = solver.solution.begin();
-    for (int i = 0; i< num_of_drives;++i)
+    for (auto order: orders)
     {
-        planned_paths[i] = *pt;
+        planned_paths[order] = *pt;
         ++pt;
     }
     runtime += solver.runtime;
-
 
     //Check for Collisions
     assert(k_robust == 0);

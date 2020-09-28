@@ -25,7 +25,6 @@ public:
 
 
 	PBSNode* dummy_start;
-	PBSNode* best_node;
 
 	uint64_t HL_num_expanded;
 	uint64_t HL_num_generated;

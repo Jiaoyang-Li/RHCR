@@ -19,7 +19,7 @@ public:
     boost::unordered_set<int> get_reachable_nodes(int root);
 
     void save_as_digraph(std::string fname) const;
-    typedef boost::unordered_map<int, boost::unordered_set<int> > PGraph_t;
+    typedef boost::unordered_map<int, boost::unordered_set<int>> PGraph_t;
 
     void update_number_of_lower_nodes(vector<int>& lower_nodes, int node) const;
 

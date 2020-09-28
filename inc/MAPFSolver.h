@@ -24,6 +24,11 @@ public:
 	ReservationTable initial_rt;
 	vector<Path> initial_paths;
 
+
+	//Write Function if have time
+	PBSNode* best_node;
+
+
 	PriorityGraph initial_priorities;
 
     list< tuple<int, int, int> > initial_constraints; // <agent, location, timestep>
