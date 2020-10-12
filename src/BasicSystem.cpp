@@ -725,19 +725,20 @@ void BasicSystem::solve_by_groups()
             planned_paths[i] = *pt;
             ++pt;
         }
-        //Merge Priorities G together
-        for (auto g : solver.best_node->priorities.G) {
-            std::cerr << "First: " << g.first << "\n";
-            std::cerr << "Set Values: \n";
-            for (auto itr = g.second.begin(); itr != g.second.end(); itr++)
-                std::cerr << (*itr) << " ";
-            std::cerr << "\n";
-        }
-        //copyPriorities += solver.best_node->priorities;
+        solver.best_node->priorities.addNumofAgents(group.size());
+        ////Merge Priorities G together
+        //for (auto g : solver.best_node->priorities.G) {
+        //    std::cerr << "First: " << g.first << "\n";
+        //    std::cerr << "Set Values: \n";
+        //    for (auto itr = g.second.begin(); itr != g.second.end(); itr++)
+        //        std::cerr << (*itr) << " ";
+        //    std::cerr << "\n\n";
+        //}
+
+        copyPriorities.addTogether(solver.best_node->priorities);
         runtime += solver.runtime;
         ++numofClusters;
     }
-    
     //Reindex agents
     //dummy_start is root node
     //PBS -> Initial Paths 
@@ -747,25 +748,32 @@ void BasicSystem::solve_by_groups()
     vector<vector<pair<int, int>>> new_goals(num_of_drives);
     vector<int> orders(num_of_drives);
     solver.initial_paths.resize(num_of_drives);
-    //solver.initial_priorities.copy(copyPriorities);
-    int newIndex = 0;
+    solver.initial_priorities.copy(copyPriorities);
+    int numIndex = 0;
+
     for (const auto& group : clustering.getClusters()){
         for (int i = 0; i < group.size(); i++) {
-            new_starts[newIndex] = starts[group[i]];
-            new_goals[newIndex] = goal_locations[group[i]];
-            solver.initial_paths[newIndex] = planned_paths[group[i]];
-            orders[newIndex] = group[i];
-            ++newIndex;
+            new_starts[numIndex] = starts[group[i]];
+            solver.initial_paths[numIndex] = planned_paths[group[i]];
+            new_goals[numIndex] = goal_locations[group[i]];
+            orders[numIndex] = group[i];
+            ++numIndex;
         }
     }
-
+    /*for (int i = 0; i < num_of_drives; ++i){
+        std::cerr << "Start " << i << " " << new_starts[i] << std::endl;
+        std::cerr << "Path " << i << " " << solver.initial_paths[i] << std::endl;
+        for (auto g : new_goals[i]) {
+            std::cerr << "Goal " << i << "first :" << g.first << "second: " << g.second << std::endl;
+        }
+        std::cerr<<std::endl;
+    }*/
 
     //Uses planned_path in the group_starts, in the root node
     bool sol = solver.run(new_starts, new_goals, time_limit);
     auto pt = solver.solution.begin();
-    for (auto order: orders)
-    {
-        planned_paths[order] = *pt;
+    for (int i = 0; i < num_of_drives; ++i){
+        planned_paths[i] = *pt;
         ++pt;
     }
     runtime += solver.runtime;

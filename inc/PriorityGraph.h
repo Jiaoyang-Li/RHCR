@@ -8,7 +8,7 @@ class PriorityGraph
 {
 public:
     double runtime;
-
+    PriorityGraph();
     void clear();
     bool empty() const {return G.empty(); }
     void copy(const PriorityGraph& other);
@@ -17,15 +17,16 @@ public:
     void remove(int from, int to); // from is lower than to
     bool connected(int from, int to) const;
     boost::unordered_set<int> get_reachable_nodes(int root);
-
+    void addNumofAgents(int num) { numofAgents = num; }
     void save_as_digraph(std::string fname) const;
     typedef boost::unordered_map<int, boost::unordered_set<int>> PGraph_t;
 
     void update_number_of_lower_nodes(vector<int>& lower_nodes, int node) const;
-
+    int numofAgents;
     //TODO: Add Together
     PGraph_t G;
     PriorityGraph& operator+=(const PriorityGraph& other);
+    void addTogether(PriorityGraph& other);
     // TODO:  connected components
 };
 
