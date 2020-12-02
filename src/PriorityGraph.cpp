@@ -1,29 +1,39 @@
 #include "PriorityGraph.h"
 #include <boost/graph/copy.hpp>
 
-PriorityGraph::PriorityGraph() {
-    numofAgents = 0;
-}
+PriorityGraph::PriorityGraph() : numofAgents(0), runtime(0){}
 
-void PriorityGraph::clear()
-{
+PriorityGraph::~PriorityGraph() {
+    clear();
+}
+void PriorityGraph::clear(){
     G.clear();
 }
-void PriorityGraph::addTogether(PriorityGraph& other) {
+void PriorityGraph::addTogether(PriorityGraph& other, vector<int> &indexes) {
     int numofNewAgents = other.numofAgents;
     for (auto set : other.G) {
         boost::unordered_set<int> temp;
         for (auto s : set.second) {
-            temp.insert(s + numofAgents);
+            //temp.insert(indexes[s]);
+            temp.insert(numofAgents + s);
         }
+        //this->G[indexes[set.first]] = temp;
         this->G[set.first + numofAgents] = temp;
+
     }
-    numofAgents += numofNewAgents;
+    this->numofAgents += numofNewAgents;
 }
 
 void PriorityGraph::copy(const PriorityGraph& other)
 {
-    this->G = other.G;
+    this->clear();
+    for (auto set : other.G) {
+        boost::unordered_set<int> temp;
+        for (auto s : set.second) {
+            temp.insert(s);
+        }
+        this->G[set.first] = temp;
+    }
 }
 
 void PriorityGraph::copy(const PriorityGraph& other, const vector<bool>& excluded_nodes)

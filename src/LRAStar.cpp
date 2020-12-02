@@ -250,7 +250,9 @@ void LRAStar::wait_command(int agent, int timestep,
 void LRAStar::wait_command(int agent, int timestep,
                            vector<int>& path_pointers)
 {
+	std::cerr << "AGENT: " << agent << " " << solution[agent];
     int location = solution[agent][timestep - 1].location;
+	std::cerr << "Time: " << timestep << " " << solution[agent][timestep - 1] << "\n\n";
     if ((int)solution[agent].size() == timestep)
     {
 		solution[agent].push_back(solution[agent][timestep - 1]);
@@ -264,6 +266,7 @@ void LRAStar::wait_command(int agent, int timestep,
     if (other != next_locations.end())
     {
         wait_command(other->second, timestep, path_pointers); // Other agent has to wait
+		std::cerr << other->second << "\n";
         path_pointers[other->second]--;
     }
     next_locations[location] = agent;

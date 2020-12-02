@@ -25,6 +25,8 @@ public:
 	vector<Path> initial_paths;
 
 
+	vector<int> indexes;
+
 	//Write Function if have time
 	PBSNode* best_node;
 
@@ -40,7 +42,7 @@ public:
 	SingleAgentSolver& path_planner;
 	// Runs the algorithm until the problem is solved or time is exhausted 
     virtual bool run(const vector<State>& starts,
-            const vector< vector<pair<int, int> > >& goal_locations,  // an ordered list of pairs of <location, release time>
+            const vector< vector<pair<int, int>>>& goal_locations,  // an ordered list of pairs of <location, release time>
             int time_limit) = 0;
 
 

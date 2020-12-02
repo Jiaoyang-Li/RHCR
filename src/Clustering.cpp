@@ -291,8 +291,7 @@ void Clustering:: inorderTraversal(Node* node)
 //Delete tree with root
 void Clustering::deleteTree(Node* node)
 {
-    if (node == nullptr)
-    {
+    if (node == nullptr){
         return;
     }
     deleteTree(node->leftChild);

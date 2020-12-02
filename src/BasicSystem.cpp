@@ -708,42 +708,58 @@ void BasicSystem::solve_by_groups()
     double runtime = 0;
     int numofClusters = 0;
     PriorityGraph copyPriorities;
+
     //Plan path for groups
     for (const auto& group : clustering.getClusters())
     {
         cout << group.size() << " agents" << endl;
         vector<State> group_starts(group.size());
         vector< vector<pair<int, int> > > group_goal_locations(group.size());
+        solver.indexes.clear();
+        solver.indexes.resize(group.size());
+
         for (int i = 0; i < group.size(); i++){
             group_starts[i] = starts[group[i]];
             group_goal_locations[i] = goal_locations[group[i]];
+            solver.indexes[i] = group[i];
         }
         bool sol = solver.run(group_starts, group_goal_locations, time_limit);
         auto pt = solver.solution.begin();
-        for (int i : group)
+        for (const int i : group)
         {
             planned_paths[i] = *pt;
+            /*if (planned_paths[i][0] != starts[i]) {
+                cout << "ERROR: Initial paths don't line up with start point" << "\n";
+            }
+            if (planned_paths[i][planned_paths[i].size()-1].location != goal_locations[i][goal_locations[i].size()-1].first) {
+                cout << "ERROR: Initial goals don't line up with goal point" << "\n";
+            }
+            std::cerr << "Start " << i << " " << starts[i] << std::endl;
+            std::cerr << "Path " << i << " " << planned_paths[i];
+            for (auto g : goal_locations[i]) {
+                std::cerr << "Goal " << i << "first :" << g.first << "second: " << g.second << std::endl;
+            }
+            std::cerr << std::endl;*/
+            
             ++pt;
         }
-        solver.best_node->priorities.addNumofAgents(group.size());
-        ////Merge Priorities G together
-        //for (auto g : solver.best_node->priorities.G) {
-        //    std::cerr << "First: " << g.first << "\n";
-        //    std::cerr << "Set Values: \n";
-        //    for (auto itr = g.second.begin(); itr != g.second.end(); itr++)
-        //        std::cerr << (*itr) << " ";
-        //    std::cerr << "\n\n";
-        //}
-
-        copyPriorities.addTogether(solver.best_node->priorities);
+        solver.best_node->priorities.setNumofAgents(group.size());
+        //Merge Priorities G together
+        
+        for (auto g : solver.best_node->priorities.G) {
+            std::cerr << "First: " << g.first << "\n";
+            std::cerr << "Set Values: ";
+            for (auto itr = g.second.begin(); itr != g.second.end(); itr++)
+                std::cerr << (*itr) << " ";
+            std::cerr << "\n";
+        }
+        copyPriorities.addTogether(solver.best_node->priorities, solver.indexes);
         runtime += solver.runtime;
         ++numofClusters;
     }
-    //Reindex agents
     //dummy_start is root node
     //PBS -> Initial Paths 
-    //First Merging All Together
-    //Same Order 
+
     vector<State> new_starts(num_of_drives);
     vector<vector<pair<int, int>>> new_goals(num_of_drives);
     vector<int> orders(num_of_drives);
@@ -761,7 +777,13 @@ void BasicSystem::solve_by_groups()
         }
     }
     /*for (int i = 0; i < num_of_drives; ++i){
-        std::cerr << "Start " << i << " " << new_starts[i] << std::endl;
+        if (solver.initial_paths[i][0] != new_starts[i]) {
+            cout << "ERROR: Initial paths don't line up with start point" << "\n";
+        }
+        if (new_goals[i][new_goals[i].size()-1].first != solver.initial_paths[i][solver.initial_paths[i].size() - 1].location) {
+            std::cerr << "ERROR: Initial goals don't line up with goal point" << "\n";
+        }*/
+        /*std::cerr << "Start " << i << " " << new_starts[i] << std::endl;
         std::cerr << "Path " << i << " " << solver.initial_paths[i] << std::endl;
         for (auto g : new_goals[i]) {
             std::cerr << "Goal " << i << "first :" << g.first << "second: " << g.second << std::endl;
@@ -775,6 +797,8 @@ void BasicSystem::solve_by_groups()
     for (int i = 0; i < num_of_drives; ++i){
         planned_paths[i] = *pt;
         ++pt;
+        solver.initial_paths[i] = planned_paths[i];
+        
     }
     runtime += solver.runtime;
 
@@ -802,6 +826,7 @@ void BasicSystem::solve_by_groups()
         }
     }
     cout << num_of_collsions << " collisions" << endl;
+
     lra.resolve_conflicts(planned_paths);
     update_paths(lra.solution);
 

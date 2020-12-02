@@ -31,10 +31,11 @@ void PBS::clear()
     // focal_list.clear();
     dfs.clear();
     release_closed_list();
-    starts.clear();
-    goal_locations.clear();
-    best_node = nullptr;
-
+    this->dummy_start = nullptr;
+    /*this->starts.clear();
+    this->goal_locations.clear();*/
+    this->best_node = nullptr;
+    this->initial_priorities.clear();
 }
 
 // takes the paths_found_initially and UPDATE all (constrained) paths found for agents from curr to start
@@ -545,7 +546,7 @@ bool PBS::generate_root_node()
 
     if (!initial_paths.empty())
     {
-        for (int i = 0; i < num_of_agents; i++)
+        for (int i : indexes)
         {
             if (!initial_paths[i].empty())
             {
@@ -556,11 +557,10 @@ bool PBS::generate_root_node()
             }
         }
     }
+    //dummy_start->priorities.copy(initial_priorities);
 
-    if (!initial_priorities.empty())
-    {
-        dummy_start->priorities.copy(initial_priorities);
-    }
+
+
 
     for (int i = 0; i < num_of_agents; i++) 
 	{
@@ -644,7 +644,7 @@ void PBS::update_best_node(PBSNode* node)
 }
 
 bool PBS::run(const vector<State>& starts,
-                    const vector< vector<pair<int, int> > >& goal_locations,
+                    const vector< vector<pair<int, int>>>& goal_locations,
                     int time_limit)
 {
     clear();
@@ -791,6 +791,8 @@ bool PBS::run(const vector<State>& starts,
 
 
 	runtime = (std::clock() - start) * 1.0 / CLOCKS_PER_SEC;
+    
+    solution.clear();
     get_solution();
 	if (solution_found && !validate_solution())
 	{
