@@ -27,7 +27,7 @@ You can find more details and explanations for all parameters with:
 ```
 
 ## License
-EHCR is released under USC – Research License. See license.md for further details.
+RHCR is released under USC – Research License. See license.md for further details.
  
 ## References
 [1] Jiaoyang Li, Andrew Tinka, Scott Kiesel, Joseph W. Durham, T. K. Satish Kumar and Sven Koenig. Lifelong Multi-Agent Path Finding in Large-Scale Warehouses (extended abstract). In Proceedings of the International Joint Conference on Autonomous Agents and Multiagent Systems (AAMAS), pages 1898-1900, 2020.
