@@ -6,8 +6,22 @@
 #include <random>
 #include <chrono>
 
-
 bool KivaGrid::load_map(std::string fname)
+{
+    std::size_t pos = fname.rfind('.');      // position of the file extension
+    auto ext_name = fname.substr(pos, fname.size());     // get the name without extension
+    if (ext_name == ".grid")
+        return load_weighted_map(fname);
+    else if (ext_name == ".map")
+        return load_unweighted_map(fname);
+    else
+    {
+        std::cout << "Map file name should end with either .grid or .map. " << std::endl;
+        return false;
+    }
+}
+
+bool KivaGrid::load_weighted_map(std::string fname)
 {
 	std::string line;
 	std::ifstream myfile((fname).c_str());
@@ -74,8 +88,8 @@ bool KivaGrid::load_map(std::string fname)
 }
 
 
-// load Minghua's map
-bool KivaGrid::load_Minghua_map(std::string fname)
+// load map
+bool KivaGrid::load_unweighted_map(std::string fname)
 {
     std::string line;
     std::ifstream myfile ((fname).c_str());
