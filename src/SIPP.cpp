@@ -63,6 +63,7 @@ Path SIPP::run(const BasicGraph& G, const State& start,
     runtime = 0;
     clock_t t = std::clock();
 	double h_val = compute_h_value(G, start.location, 0, goal_location);
+    double earliest_t = get_earliest_finish_time(G, start.location, start.timestep, 0, goal_location);
 	if (h_val > INT_MAX)
 	{
 		cout << "The start and goal locations are disconnected!" << endl;
@@ -77,7 +78,7 @@ Path SIPP::run(const BasicGraph& G, const State& start,
         node->open_handle = open_list.push(node);
         node->in_openlist = true;
         allNodes_table.insert(node);
-        min_f_val = node->getFVal();
+        min_f_val = max(earliest_t, node->getFVal());
         focal_bound = min_f_val * suboptimal_bound;
         node->focal_handle = focal_list.push(node);
     }
@@ -92,7 +93,7 @@ Path SIPP::run(const BasicGraph& G, const State& start,
         node->open_handle = open_list.push(node);
         node->in_openlist = true;
         allNodes_table.insert(node);
-        min_f_val = node->getFVal();
+        min_f_val = max(earliest_t, node->getFVal());
         focal_bound = min_f_val;
         node->focal_handle = focal_list.push(node);
     }
@@ -108,12 +109,33 @@ Path SIPP::run(const BasicGraph& G, const State& start,
 
          // update goal id
         if (curr->state.location == goal_location[curr->goal_id].first &&
-			curr->state.timestep >= goal_location[curr->goal_id].second) // reach the goal location after its release time
+                !(curr->goal_id == (int)goal_location.size() - 1 &&
+                 earliest_holding_time > curr->state.timestep))
         {
-            curr->goal_id++;
-			if (curr->goal_id == (int)goal_location.size() &&
-				earliest_holding_time > curr->state.timestep)
-				curr->goal_id--;
+            if (curr->state.timestep < goal_location[curr->goal_id].second &&
+                std::get<1>(curr->interval) > goal_location[curr->goal_id].second)
+            {
+                int t0 = goal_location[curr->goal_id].second;
+                // split curr into two nodes, one with [t_min, t0) and one with [t0, t_max)
+                auto copy1 = new SIPPNode(curr->state, curr->g_val, curr->h_val,
+                                          make_tuple(std::get<0>(curr->interval), t0, std::get<2>(curr->interval)),
+                                          curr->parent, 0);
+                copy1->open_handle = open_list.push(copy1);
+                copy1->in_openlist = true;
+                copy1->focal_handle = focal_list.push(copy1);
+                allNodes_table.insert(copy1);
+
+                auto copy2 = new SIPPNode(curr->state, curr->g_val + t0 - curr->state.timestep, curr->h_val,
+                                          make_tuple(t0, std::get<1>(curr->interval), std::get<2>(curr->interval)),
+                                          copy1, 0);
+                copy2->state.timestep = t0;
+                allNodes_table.insert(copy2);
+
+                num_generated += 2;
+                curr = copy2;
+            }
+            if (curr->state.timestep >= goal_location[curr->goal_id].second)
+                curr->goal_id++; // reach the goal location after its release time
         }
 		// check if the popped node is a goal
 		if (curr->goal_id == (int)goal_location.size())
@@ -194,7 +216,7 @@ Path SIPP::run(const BasicGraph& G, const State& start,
                 node2->open_handle = open_list.push(node2);
                 node2->in_openlist = true;
                 allNodes_table.insert(node2);
-                min_f_val = node2->getFVal();
+                min_f_val = max(earliest_t, node2->getFVal());
                 focal_bound = min_f_val;
                 node2->focal_handle = focal_list.push(node2);
             }
