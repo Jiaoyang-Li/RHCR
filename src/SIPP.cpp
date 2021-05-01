@@ -119,7 +119,7 @@ Path SIPP::run(const BasicGraph& G, const State& start,
                 // split curr into two nodes, one with [t_min, t0) and one with [t0, t_max)
                 auto copy1 = new SIPPNode(curr->state, curr->g_val, curr->h_val,
                                           make_tuple(std::get<0>(curr->interval), t0, std::get<2>(curr->interval)),
-                                          curr->parent, 0);
+                                          curr->parent, curr->conflicts);
                 copy1->open_handle = open_list.push(copy1);
                 copy1->in_openlist = true;
                 copy1->focal_handle = focal_list.push(copy1);
@@ -127,7 +127,7 @@ Path SIPP::run(const BasicGraph& G, const State& start,
 
                 auto copy2 = new SIPPNode(curr->state, curr->g_val + t0 - curr->state.timestep, curr->h_val,
                                           make_tuple(t0, std::get<1>(curr->interval), std::get<2>(curr->interval)),
-                                          copy1, 0);
+                                          copy1, curr->conflicts);
                 copy2->state.timestep = t0;
                 allNodes_table.insert(copy2);
 
