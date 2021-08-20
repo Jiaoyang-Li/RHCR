@@ -38,24 +38,24 @@ list<pair<int, int> > StateTimeAStar::updateTrajectory(const StateTimeAStarNode*
 // return true if a path found (and updates vector<int> path) or false if no path exists
 // after max_timestep, switch from time-space A* search to normal A* search
 Path StateTimeAStar::run(const BasicGraph& G, const State& start, 
-	const vector<pair<int, int> >& goal_location, ReservationTable& rt)
+    const vector<pair<int, int> >& goal_location, ReservationTable& rt)
 {
     num_expanded = 0;
     num_generated = 0;
-	runtime = 0;
-	clock_t t = std::clock();
+    runtime = 0;
+    clock_t t = std::clock();
 
-	double h_val = compute_h_value(G, start.location, 0, goal_location);
-	if (h_val > INT_MAX)
-	{
-		cout << "The start and goal locations are disconnected!" << endl;
-		return Path();
-	}
+    double h_val = compute_h_value(G, start.location, 0, goal_location);
+    if (h_val > INT_MAX)
+    {
+        cout << "The start and goal locations are disconnected!" << endl;
+        return Path();
+    }
     if (rt.isConstrained(start.location, start.location, 0))
         return Path();
 
-	// generate root and add it to the OPEN list
-	StateTimeAStarNode* root;
+    // generate root and add it to the OPEN list
+    StateTimeAStarNode* root;
     root = new StateTimeAStarNode(start, 0, h_val, nullptr, 0);
     num_generated++;
     root->open_handle = open_list.push(root);
@@ -65,9 +65,9 @@ Path StateTimeAStar::run(const BasicGraph& G, const State& start,
     min_f_val = root->getFVal();
     double lower_bound = min_f_val;
 
-	int earliest_holding_time = 0;
-	if (hold_endpoints)
-		earliest_holding_time = rt.getHoldingTimeFromCT(goal_location.back().first);
+    int earliest_holding_time = 0;
+    if (hold_endpoints)
+        earliest_holding_time = rt.getHoldingTimeFromCT(goal_location.back().first);
 
     while (!focal_list.empty())
     {
@@ -75,23 +75,23 @@ Path StateTimeAStar::run(const BasicGraph& G, const State& start,
         open_list.erase(curr->open_handle);
         curr->in_openlist = false;
         num_expanded++;
-		
-		// update goal id
+        
+        // update goal id
         if (curr->state.location == goal_location[curr->goal_id].first && 
-			curr->state.timestep >= goal_location[curr->goal_id].second &&
-			!(curr->goal_id == (int)goal_location.size() - 1 &&
-				earliest_holding_time > curr->state.timestep))
-			curr->goal_id++;
-		// check if the popped node is a goal
-		if (curr->goal_id == (int)goal_location.size())
-		{
-			Path path = updatePath(curr);
-			releaseClosedListNodes();
-			open_list.clear();
-			focal_list.clear();
-			runtime = (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
-			return path;
-		}
+            curr->state.timestep >= goal_location[curr->goal_id].second &&
+            !(curr->goal_id == (int)goal_location.size() - 1 &&
+                earliest_holding_time > curr->state.timestep))
+            curr->goal_id++;
+        // check if the popped node is a goal
+        if (curr->goal_id == (int)goal_location.size())
+        {
+            Path path = updatePath(curr);
+            releaseClosedListNodes();
+            open_list.clear();
+            focal_list.clear();
+            runtime = (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+            return path;
+        }
 
         for (auto next_state: G.get_neighbors(curr->state))
         {
@@ -103,8 +103,8 @@ Path StateTimeAStar::run(const BasicGraph& G, const State& start,
                 if (next_h_val >= INT_MAX) // This vertex cannot reach the goal vertex
                     continue;
                 int next_conflicts = curr->conflicts;
-				if (rt.isConflicting(curr->state.location, next_state.location, next_state.timestep))
-					next_conflicts++;
+                if (rt.isConflicting(curr->state.location, next_state.location, next_state.timestep))
+                    next_conflicts++;
 
                 // generate (maybe temporary) node
                 auto next = new StateTimeAStarNode(next_state, next_g_val, next_h_val, curr, next_conflicts);
@@ -235,7 +235,7 @@ void StateTimeAStar::findTrajectory(const BasicGraph& G,
 
         // check if the popped node is a goal
         if (curr->state.location == goal_locations[curr->goal_id].first &&
-			curr->state.timestep >= goal_locations[curr->goal_id].second) // reach the goal location after its release time
+            curr->state.timestep >= goal_locations[curr->goal_id].second) // reach the goal location after its release time
         {
             curr->goal_id++;
             if (curr->goal_id == (int) goal_locations.size())

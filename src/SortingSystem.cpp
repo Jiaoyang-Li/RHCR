@@ -15,12 +15,12 @@ SortingSystem::~SortingSystem() {}
 
 void SortingSystem::initialize_start_locations()
 {
-    int N = G.size();
-    std::vector<bool> used(N, false);
+	int N = G.size();
+	std::vector<bool> used(N, false);
 
-    // Choose random start locations
-    // Any non-obstacle locations can be start locations
-    // Start locations should be unique
+	// Choose random start locations
+	// Any non-obstacle locations can be start locations
+	// Start locations should be unique
 	for (int k = 0; k < num_of_drives;)
 	{
 		int loc = rand() % N;
@@ -45,12 +45,12 @@ void SortingSystem::initialize_goal_locations()
 {
 	if (hold_endpoints || useDummyPaths)
 		return;
-    // Choose random goal locations
-    // a close induct location can be a goal location, or
-    // any eject locations can be goal locations
-    // Goal locations are not necessarily unique
-    for (int k = 0; k < num_of_drives; k++)
-    {
+	// Choose random goal locations
+	// a close induct location can be a goal location, or
+	// any eject locations can be goal locations
+	// Goal locations are not necessarily unique
+	for (int k = 0; k < num_of_drives; k++)
+	{
 		int goal;
 		if (k % 2 == 0) // to induction
 		{
@@ -62,7 +62,7 @@ void SortingSystem::initialize_goal_locations()
 			goal = assign_eject_station();
 		}
 		goal_locations[k].emplace_back(goal, 0);
-    }
+	}
 }
 
 
@@ -114,7 +114,7 @@ void SortingSystem::update_goal_locations()
 
 int SortingSystem::assign_induct_station(int curr) const
 {
-    int assigned_loc;
+	int assigned_loc;
 	double min_cost = DBL_MAX;
 	for (auto induct : drives_in_induct_stations)
 	{
@@ -125,7 +125,7 @@ int SortingSystem::assign_induct_station(int curr) const
 			assigned_loc = induct.first;
 		}
 	}
-    return assigned_loc;
+	return assigned_loc;
 }
 
 
@@ -142,9 +142,9 @@ int SortingSystem::assign_eject_station() const
 
 void SortingSystem::simulate(int simulation_time)
 {
-    std::cout << "*** Simulating " << seed << " ***" << std::endl;
-    this->simulation_time = simulation_time;
-    initialize();
+	std::cout << "*** Simulating " << seed << " ***" << std::endl;
+	this->simulation_time = simulation_time;
+	initialize();
 	
 	for (; timestep < simulation_time; timestep += simulation_window)
 	{
@@ -180,9 +180,9 @@ void SortingSystem::simulate(int simulation_time)
 		}
 	}
 
-    update_start_locations();
-    std::cout << std::endl << "Done!" << std::endl;
-    save_results();
+	update_start_locations();
+	std::cout << std::endl << "Done!" << std::endl;
+	save_results();
 }
 
 
