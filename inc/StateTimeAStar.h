@@ -105,9 +105,12 @@ public:
 class StateTimeAStar: public SingleAgentSolver
 {
 public:
+    int window = 1e9; // using only heuristics beyond the planning window
+
     // find path by time-space A* search
     Path run(const BasicGraph& G, const State& start, const vector<pair<int, int> >& goal_location,
                   ReservationTable& RT);
+
 
 	string getName() const { return "AStar"; }
     void findTrajectory(const BasicGraph& G,
@@ -116,6 +119,7 @@ public:
                         const unordered_map<int, double>& travel_times,
                         list<pair<int, int> >& path);
     StateTimeAStar(): SingleAgentSolver() {}
+    StateTimeAStar(int window): SingleAgentSolver(), window(window) {}
 
 private:
 	// define typedefs and handles for heap and hash_map

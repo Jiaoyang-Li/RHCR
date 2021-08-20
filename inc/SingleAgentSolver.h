@@ -6,6 +6,7 @@
 class SingleAgentSolver
 {
 public:
+    int run_count = 0; // debug, only valid in STA*
 
 	bool prioritize_start;
 	double suboptimal_bound;

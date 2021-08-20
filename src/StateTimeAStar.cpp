@@ -40,6 +40,7 @@ list<pair<int, int> > StateTimeAStar::updateTrajectory(const StateTimeAStarNode*
 Path StateTimeAStar::run(const BasicGraph& G, const State& start, 
     const vector<pair<int, int> >& goal_location, ReservationTable& rt)
 {
+    run_count += 1;
     num_expanded = 0;
     num_generated = 0;
     runtime = 0;
@@ -82,10 +83,10 @@ Path StateTimeAStar::run(const BasicGraph& G, const State& start,
             !(curr->goal_id == (int)goal_location.size() - 1 &&
                 earliest_holding_time > curr->state.timestep))
             curr->goal_id++;
-        // check if the popped node is a goal
-        if (curr->goal_id == (int)goal_location.size())
+        // check if the popped node is a goal, or exceeding planning window (window==inf if horizon cut is disabled)
+        if (curr->goal_id == (int)goal_location.size() || curr->state.timestep > start.timestep + this->window)
         {
-            Path path = updatePath(curr);
+            Path path = updatePath(curr); // partial path in case horizon cut is applied
             releaseClosedListNodes();
             open_list.clear();
             focal_list.clear();
