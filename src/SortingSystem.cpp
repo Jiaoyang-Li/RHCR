@@ -148,6 +148,7 @@ void SortingSystem::simulate(int simulation_time)
 	
 	for (; timestep < simulation_time; timestep += simulation_window)
 	{
+		if (timestep>=30) break;
 		std::cout << "Timestep " << timestep << std::endl;
 
 		update_start_locations();

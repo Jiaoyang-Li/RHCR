@@ -65,6 +65,7 @@ public:
 		rt.use_cat = use_cat;
 		rt.prioritize_start = prioritize_start;
 	}
+    int find_consistent_paths_callcnt = 0;
 
 private:
 
@@ -117,6 +118,7 @@ private:
                        list<Conflict>& copy, const vector<bool>& excluded_agents);
 
     double get_path_cost(const Path& path) const;
+    double get_path_h_val(const Path& path, const vector<pair<int, int> >& goal_location) const;
 	
     // update information
     //void collect_constraints(const boost::unordered_set<int>& agents, int current_agent);

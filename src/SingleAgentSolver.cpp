@@ -2,7 +2,7 @@
 
 
 double SingleAgentSolver::compute_h_value(const BasicGraph& G, int curr, int goal_id,
-                             const vector<pair<int, int> >& goal_location) const
+                             const vector<pair<int, int> >& goal_location)
 {
     double h = G.heuristics.at(goal_location[goal_id].first)[curr];
     goal_id++;

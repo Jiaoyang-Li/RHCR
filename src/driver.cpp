@@ -37,8 +37,8 @@ MAPFSolver* set_solver(const BasicGraph& G, const boost::program_options::variab
 	if (solver_name == "ASTAR")
 	{
 		// horizon cut
-		path_planner = new StateTimeAStar(vm["planning_window"].as<int>());
-		// path_planner = new StateTimeAStar();
+		// path_planner = new StateTimeAStar(vm["planning_window"].as<int>());
+		path_planner = new StateTimeAStar();
 	}
 	else if (solver_name == "SIPP")
 	{

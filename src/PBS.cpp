@@ -16,6 +16,7 @@ void PBS::clear()
 	runtime_choose_conflict = 0;
 	runtime_find_consistent_paths = 0;
 	runtime_find_replan_agents = 0;
+	find_consistent_paths_callcnt = 0;
 
 	HL_num_expanded = 0;
 	HL_num_generated = 0;
@@ -311,6 +312,24 @@ double PBS::get_path_cost(const Path& path) const
 	return cost;
 }
 
+double PBS::get_path_h_val(const Path& path, const vector<pair<int, int> >& goal_location) const
+{
+	int next_goal_id = 0;
+	for (auto p: path)
+		if (p.location == goal_location[next_goal_id].first)
+			next_goal_id++;
+	if (next_goal_id >= goal_location.size())
+		return 0;
+	double h = G.heuristics.at(goal_location[next_goal_id].first)[path.back().location];
+    next_goal_id++;
+    while (next_goal_id < goal_location.size())
+    {
+        h += G.heuristics.at(goal_location[next_goal_id].first)[goal_location[next_goal_id - 1].first];
+        next_goal_id++;
+    }
+    return h;
+}
+
 bool PBS::find_path(PBSNode* node, int agent)
 {
 	Path path;
@@ -325,9 +344,83 @@ bool PBS::find_path(PBSNode* node, int agent)
 	runtime_rt += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
 
 	t = std::clock();
+	// DEBUG
+	dynamic_cast<StateTimeAStar&>(path_planner).window = this->window;
+	Path path1 = path_planner.run(G, starts[agent], goal_locations[agent], rt);
+	dynamic_cast<StateTimeAStar&>(path_planner).window = 1e9;
 	path = path_planner.run(G, starts[agent], goal_locations[agent], rt);
+	// compare path w & w/o horizon cut
+	// bool different = 0;
+	// for (int i=0; i<path1.size(); ++i)
+	// 	if (path1[i].location != path[i].location)
+	// 		different = 1;
+	// if (different) {
+	// 	std::cout << "path different!\n";
+	// 	std::cout << "start: " << starts[agent] << "  goal:";
+	// 	for (auto g: goal_locations[agent])
+	// 		std::cout << g.first << "\n";
+	// 	if (goal_locations[agent].size()>1) std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+	// 	std::cout << "w/ cut\n";
+	// 	std::cout << "A " << agent << "\n";
+	// 	for (auto s: path1)
+	// 		std::cout << s.location << " ";
+	// 	std::cout << '\n';
+	// 	std::cout << "w/o cut\n";
+	// 	for (auto s: path)
+	// 		std::cout << s.location << " ";
+	// 	std::cout << '\n';
+	// 	std::cout << "h val:\n";
+	// 	// auto val1 = SingleAgentSolver::compute_h_value(G,path1[path1.size()-1]);
+	// 	auto h1 = G.heuristics.at(goal_locations[agent][0].first)[path1[path1.size()-1].location];
+	// 	auto h = G.heuristics.at(goal_locations[agent][0].first)[path[path1.size()-1].location];
+	// 	std::cout << h1 << " vs " << h << "\n";
+	// 	std::cout << "-----------------------\n";
+	// }
+
+	Path path_trunc(path.begin(), path.begin() + path1.size());
+
+	// compute conflicts
+	auto tmp = this->paths[agent];
+	this->paths[agent] = &path_trunc;
+	list<Conflict> new_conflicts_trunc;
+	find_conflicts(new_conflicts_trunc, agent);
+	this->paths[agent] = &path;
+	list<Conflict> new_conflicts;
+	find_conflicts(new_conflicts, agent);
+	this->paths[agent] = tmp;
+	int ct = new_conflicts_trunc.size();
+	int c0 = new_conflicts.size();
+	if (ct != c0)
+		std::cout << "!! " << ct << " " << c0 << "\n";
+
+	// 	std::cout << "conflict: " << new_conflicts1.size() << " " << new_conflicts.size() << "\n";
+
+	// DEBUG: compare conflicts
+	// dynamic_cast<StateTimeAStar&>(path_planner).window = this->window;
+	// Path path1 = path_planner.run(G, starts[agent], goal_locations[agent], rt);
+	// dynamic_cast<StateTimeAStar&>(path_planner).window = 1e9;
+	// path = path_planner.run(G, starts[agent], goal_locations[agent], rt);
+	// if (different) {
+	// 	// compute conflicts
+	// 	auto tmp = this->paths[agent];
+	// 	this->paths[agent] = &path1;
+	// 	list<Conflict> new_conflicts1;
+	// 	find_conflicts(new_conflicts1, agent);
+	// 	this->paths[agent] = &path;
+	// 	list<Conflict> new_conflicts;
+	// 	find_conflicts(new_conflicts, agent);
+	// 	this->paths[agent] = tmp;echo "#define HORIZONCUT" > hhh 
+	// 	// compare
+	// 	std::cout << "conflict: " << new_conflicts1.size() << " " << new_conflicts.size() << "\n";
+	// }
+
+#include "../hhh"
+#ifdef HORIZONCUT
+	path.resize(path1.size()); // TEST!!
+#endif
+
 	runtime_plan_paths += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
-	path_cost = path_planner.path_cost;
+	// path_cost = path_planner.path_cost;
 	// t = std::clock();
 	// rt.clear();
 	// runtime_rt += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
@@ -340,10 +433,16 @@ bool PBS::find_path(PBSNode* node, int agent)
 			std::cout << "Fail to find a path" << std::endl;
 		return false;
 	}
+	if (path[0].location != starts[agent].location) throw "WTF";
 	double old_cost = 0;
-	if (paths[agent] != nullptr)
+	double old_h_val = 0;
+	if (paths[agent] != nullptr) {
 		old_cost = get_path_cost(*paths[agent]);
-	node->g_val = node->g_val - old_cost + path_cost;
+		old_h_val = get_path_h_val(*paths[agent], goal_locations[agent]);
+	}
+	// node->g_val = node->g_val - old_cost + path_cost;
+	node->g_val = node->g_val - old_cost + get_path_cost(path);
+	node->h_val = node->h_val - old_h_val + get_path_h_val(path, goal_locations[agent]);
 	for (auto it = node->paths.begin(); it != node->paths.end(); ++it)
 	{
 		if (std::get<0>(*it) == agent)
@@ -410,6 +509,7 @@ void PBS::find_replan_agents(PBSNode* node, const list<Conflict>& conflicts,
 
 bool PBS::find_consistent_paths(PBSNode* node, int agent)
 {
+	find_consistent_paths_callcnt += 1;
 	clock_t t = clock();
 	int count = 0; // count the times that we call the low-level search.
 	unordered_set<int> replan;
@@ -419,6 +519,11 @@ bool PBS::find_consistent_paths(PBSNode* node, int agent)
 	/*clock_t t2 = clock();
 	PathTable pt(paths, window, k_robust);
 	runtime_detect_conflicts += (std::clock() - t2) * 1.0 / CLOCKS_PER_SEC;*/
+
+	// std::cout << "-------------------------\n";
+	// std::cout << "A " << agent << "  c " << node->conflicts.size() << "\n";
+	// std::cout << "replan ";	for (int r: replan) std::cout << r << " "; std::cout << "\n";
+
 	while (!replan.empty())
 	{
 		if (count > (int) node->paths.size() * 5)
@@ -440,6 +545,8 @@ bool PBS::find_consistent_paths(PBSNode* node, int agent)
 		remove_conflicts(node->conflicts, a);
 		list<Conflict> new_conflicts;
 		find_conflicts(new_conflicts, a);
+		// std::cout << "num of new collisions: " << new_conflicts.size() << "\n";
+
 		/*t2 = clock();
 		std::list< std::shared_ptr<Conflict> > new_conflicts = pt.add(paths[a], a);
 		runtime_detect_conflicts += (std::clock() - t2) * 1.0 / CLOCKS_PER_SEC;*/
@@ -450,6 +557,11 @@ bool PBS::find_consistent_paths(PBSNode* node, int agent)
 	runtime_find_consistent_paths += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
 	if (screen == 2)
 		return validate_consistence(node->conflicts, node->priorities);
+
+	// DEBUG
+	// std::cout << "num of collisions: " << node->conflicts.size() << "\n";
+	// std::cout << "node gval:" << node->g_val << "\n";
+
 	return true;
 }
 
@@ -521,9 +633,8 @@ bool PBS::generate_child(PBSNode* node, PBSNode* parent)
 
 	node->num_of_collisions = node->conflicts.size();
 
-	//Estimate h value
-	node->h_val = 0;
 	node->f_val = node->g_val + node->h_val;
+	// std::cout << "gnode fval:" << node->f_val << "\n";
 
 	// push_node(node);
 
@@ -614,6 +725,7 @@ bool PBS::generate_root_node()
 
 void PBS::push_node(PBSNode* node)
 {
+	// std::cout << "push #conflict=" << node->conflicts.size() << "\n";
 	dfs.push_back(node);
 	allNodes_table.push_back(node);
 }
@@ -682,6 +794,13 @@ bool PBS::run(const vector<State>& starts,
 		}
 
 		PBSNode* curr = pop_node();
+
+		// std::cout << "curr node " << curr->num_of_collisions << " " << curr->g_val << " " << curr->h_val << "\n";
+		// if (curr->parent == nullptr)
+		// 	std::cout << "parentode null\n";
+		// else
+		// 	std::cout << "parentode " << curr->parent->num_of_collisions << " " << curr->parent->g_val << " " << curr->parent->h_val << "\n";
+
 		update_paths(curr);
 
 		if (curr->conflicts.empty())
@@ -748,6 +867,7 @@ bool PBS::run(const vector<State>& starts,
 		{
 			if (n[0] != nullptr && n[1] != nullptr)
 			{
+				// std::cout << "compare children fval: " << n[0]->f_val << " " << n[1]->f_val << "\n";
 				if (n[0]->f_val < n[1]->f_val ||
 					(n[0]->f_val == n[1]->f_val && n[0]->num_of_collisions < n[1]->num_of_collisions))
 				{
@@ -926,6 +1046,7 @@ void PBS::update_CAT(int ex_ag)
 
 void PBS::print_results() const
 {
+	// std::cout << "hold_endpoints: " << hold_endpoints << "\n";
 	std::cout << "PBS:";
 	if(solution_cost >= 0) // solved
 		std::cout << "Succeed,";
@@ -951,6 +1072,7 @@ void PBS::print_results() const
 		std::endl;
 
 	std::cout << "path_planner.run_count " << path_planner.run_count << "\n";
+	std::cout << "find_consistent_paths_callcnt " << find_consistent_paths_callcnt << "\n";
 }
 
 void PBS::save_results(const std::string &fileName, const std::string &instanceName) const

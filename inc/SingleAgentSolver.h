@@ -24,8 +24,8 @@ public:
 
 	unordered_map<int, double> travel_times;
 
-	double compute_h_value(const BasicGraph& G, int curr, int goal_id,
-		const vector<pair<int, int> >& goal_location) const;
+	static double compute_h_value(const BasicGraph& G, int curr, int goal_id,
+		const vector<pair<int, int> >& goal_location);
 
     virtual Path run(const BasicGraph& G, const State& start, const vector<pair<int, int> >& goal_location, ReservationTable& RT) = 0;
 	virtual string getName() const = 0;
