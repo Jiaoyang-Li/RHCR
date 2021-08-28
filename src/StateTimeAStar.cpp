@@ -5,7 +5,7 @@ Path StateTimeAStar::updatePath(const StateTimeAStarNode* goal)
 {
     // std::cout << "Update path .. " << std::endl;
     Path path(goal->state.timestep + 1);
-    path_cost = goal->getFVal();
+    path_cost = goal->getFVal(); // INVALID when horizon cut is enabled
     // std::cout << goal->timestep << "," << path.size() <<
     //    "," << goal->conflicts << std::endl;
     num_of_conf = goal->conflicts;
@@ -22,7 +22,7 @@ Path StateTimeAStar::updatePath(const StateTimeAStarNode* goal)
 list<pair<int, int> > StateTimeAStar::updateTrajectory(const StateTimeAStarNode* goal)
 {
     list<pair<int, int> > trajectory;
-    path_cost = goal->getFVal();
+    path_cost = goal->getFVal(); // INVALID when horizon cut is enabled
     const StateTimeAStarNode* curr = goal;
     while (curr != nullptr)
     {
