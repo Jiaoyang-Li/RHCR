@@ -1,3 +1,5 @@
+**This branch implements horizon cut (with STA*/PBS combination)**
+
 # RHCR
 
 Rolling-Horizon Collision Resolution (WHCR) is an effifent algorithm for solving lifelong Multi-Agent Path Finding (MAPF) where we are aksed to plan collision-free paths for a large number of agents that are constanly engaged with new goal locations. WHCR calls a Windowed MAPF solver every h timesteps that resolves collisions only for the next w timesteps (w >= h). More details can be found in our extended abstract at AAMAS 2020 [1] or our full paper at AAAI 2021 [2].
@@ -34,7 +36,7 @@ You can find more details and explanations for all parameters with:
 
 ## License
 RHCR is released under USC – Research License. See license.md for further details.
- 
+
 ## References
 [1] Jiaoyang Li, Andrew Tinka, Scott Kiesel, Joseph W. Durham, T. K. Satish Kumar and Sven Koenig. Lifelong Multi-Agent Path Finding in Large-Scale Warehouses (extended abstract). In Proceedings of the International Joint Conference on Autonomous Agents and Multiagent Systems (AAMAS), pages 1898-1900, 2020.
 

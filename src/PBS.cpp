@@ -991,8 +991,6 @@ void PBS::print_results() const
 		runtime_find_replan_agents <<
 		std::endl;
 
-	std::cout << "path_planner.run_count " << path_planner.run_count << "\n";
-	std::cout << "find_consistent_paths_callcnt " << find_consistent_paths_callcnt << "\n";
 }
 
 void PBS::save_results(const std::string &fileName, const std::string &instanceName) const
