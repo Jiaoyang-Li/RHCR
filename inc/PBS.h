@@ -10,30 +10,30 @@ class PBS:
 {
 public:
     bool lazyPriority;
-    bool prioritize_start;
+    bool prioritize_start = true;
 
 	 // runtime breakdown
-    double runtime_rt;
-    double runtime_plan_paths;
-    double runtime_get_higher_priority_agents;
-    double runtime_copy_priorities;
-    double runtime_detect_conflicts;
-    double runtime_copy_conflicts;
-    double runtime_choose_conflict;
-    double runtime_find_consistent_paths;
-    double runtime_find_replan_agents;
+    double runtime_rt = 0;
+    double runtime_plan_paths = 0;
+    double runtime_get_higher_priority_agents = 0;
+    double runtime_copy_priorities = 0;
+    double runtime_detect_conflicts = 0;
+    double runtime_copy_conflicts = 0;
+    double runtime_choose_conflict = 0;
+    double runtime_find_consistent_paths = 0;
+    double runtime_find_replan_agents = 0;
 
 
-	PBSNode* dummy_start;
+	PBSNode* dummy_start = nullptr;
 	PBSNode* best_node;
 
-	uint64_t HL_num_expanded;
-	uint64_t HL_num_generated;
-	uint64_t LL_num_expanded;
-	uint64_t LL_num_generated;
+	uint64_t HL_num_expanded = 0;
+	uint64_t HL_num_generated = 0;
+	uint64_t LL_num_expanded = 0;
+	uint64_t LL_num_generated = 0;
 
 
-	double min_f_val;
+	double min_f_val = 0;
 
 
 	ReservationTable initial_rt;
@@ -75,13 +75,13 @@ private:
    //  vector<State> starts;
     // vector< vector<int> > goal_locations;
 
-    std::clock_t start;
+    std::clock_t start = 0;
 
-    int num_of_agents;
+    int num_of_agents = 0;
 
-    double min_sum_of_costs;
+    double min_sum_of_costs = 0;
 
-	int time_limit;
+	int time_limit = 0;
 	// double focal_w = 1.0;
     unordered_map<int, double> travel_times;
 
@@ -101,7 +101,7 @@ private:
     // high level search
 	bool find_path(PBSNode*  node, int ag);
     bool find_consistent_paths(PBSNode* node, int a); // find paths consistent with priorities
-    void resolve_conflict(const Conflict& conflict, PBSNode* n1, PBSNode* n2);
+    static void resolve_conflict(const Conflict& conflict, PBSNode* n1, PBSNode* n2);
 	bool generate_child(PBSNode* child, PBSNode* curr);
 
 	// conflicts
@@ -130,16 +130,16 @@ private:
 	// print and save
 	void print_paths() const;
 	void print_results() const;
-	void print_conflicts(const PBSNode &curr) const;
+	static void print_conflicts(const PBSNode &curr) ;
 
 
 	// validate
 	bool validate_solution();
-    bool validate_consistence(const list<Conflict>& conflicts, const PriorityGraph &G) const;
+    static bool validate_consistence(const list<Conflict>& conflicts, const PriorityGraph &G) ;
 
 
     // tools
-    bool wait_at_start(const Path& path, int start_location, int timestep) const;
+    static bool wait_at_start(const Path& path, int start_location, int timestep) ;
     void find_replan_agents(PBSNode* node, const list<Conflict>& conflicts,
             unordered_set<int>& replan);
 };

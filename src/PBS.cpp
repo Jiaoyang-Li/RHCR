@@ -359,7 +359,7 @@ bool PBS::find_path(PBSNode* node, int agent)
 
 
 // return true if the agent keeps waiting at its start location until at least timestep
-bool PBS::wait_at_start(const Path& path, int start_location, int timestep) const
+bool PBS::wait_at_start(const Path& path, int start_location, int timestep)
 {
     for (auto& state : path)
     {
@@ -404,7 +404,7 @@ void PBS::find_replan_agents(PBSNode* node, const list<Conflict>& conflicts,
             continue;
         }
     }
-    runtime_find_replan_agents += (std::clock() - t2) * 1.0 / CLOCKS_PER_SEC;
+    runtime_find_replan_agents += (double)(std::clock() - t2) * 1.0 / CLOCKS_PER_SEC;
 }
 
 
@@ -423,7 +423,7 @@ bool PBS::find_consistent_paths(PBSNode* node, int agent)
     {
         if (count > (int) node->paths.size() * 5)
         {
-            runtime_find_consistent_paths += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+            runtime_find_consistent_paths += (double)(std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
             return false;
         }
         int a = *replan.begin();
@@ -434,7 +434,7 @@ bool PBS::find_consistent_paths(PBSNode* node, int agent)
         runtime_detect_conflicts += (std::clock() - t2) * 1.0 / CLOCKS_PER_SEC;*/
         if (!find_path(node, a))
         {
-            runtime_find_consistent_paths += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+            runtime_find_consistent_paths += (double)(std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
             return false;
         }
         remove_conflicts(node->conflicts, a);
@@ -447,26 +447,26 @@ bool PBS::find_consistent_paths(PBSNode* node, int agent)
 
         node->conflicts.splice(node->conflicts.end(), new_conflicts);
     }
-    runtime_find_consistent_paths += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+    runtime_find_consistent_paths += (double)(std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
     if (screen == 2)
         return validate_consistence(node->conflicts, node->priorities);
     return true;
 }
 
 
-bool PBS::validate_consistence(const list<Conflict>& conflicts, const PriorityGraph &G) const
+bool PBS::validate_consistence(const list<Conflict>& conflicts, const PriorityGraph &G)
 {
     for (auto conflict : conflicts)
     {
         int a1 = std::get<0>(conflict);
         int a2 = std::get<1>(conflict);
-        if (G.connected(a1, a2))
-            return false;
-        else if (G.connected(a2, a1))
+        if (G.connected(a1, a2) || G.connected(a2, a1))
             return false;
     }
     return true;
 }
+
+
 
 bool PBS::generate_child(PBSNode* node, PBSNode* parent)
 {
@@ -496,11 +496,7 @@ bool PBS::generate_child(PBSNode* node, PBSNode* parent)
                 {
                     if (parent->priority.first == a2 || parent->priority.second == a2)
                     {
-                        if (node->priorities.connected(a1, a2))
-                        {
-                            cout << "BOOM" << endl;
-                            exit(-1);
-                        }
+                        assert(!node->priorities.connected(a1, a2));
                     }
                 }
 
@@ -513,11 +509,15 @@ bool PBS::generate_child(PBSNode* node, PBSNode* parent)
         clock_t t = clock();
         node->priorities.copy(node->parent->priorities);
         node->priorities.add(node->priority.first, node->priority.second);
-        runtime_copy_priorities += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+        runtime_copy_priorities += (double)(std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
         copy_conflicts(node->parent->conflicts, node->conflicts, -1); // copy all conflicts
         if (!find_consistent_paths(node, node->priority.first))
             return false;
     }
+
+
+
+
 
     node->num_of_collisions = node->conflicts.size();
 
@@ -570,11 +570,11 @@ bool PBS::generate_root_node()
 		rt.copy(initial_rt);
         rt.build(paths, initial_constraints, dummy_start->priorities.get_reachable_nodes(i), i, start_location);
         runtime_get_higher_priority_agents += dummy_start->priorities.runtime;
-        runtime_rt += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+        runtime_rt += (double)(std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
         vector< vector<double> > h_values(goal_locations[i].size());
         t = std::clock();
         path = path_planner.run(G, starts[i], goal_locations[i], rt);
-		runtime_plan_paths += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+		runtime_plan_paths += (double)(std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
         path_cost = path_planner.path_cost;
         rt.clear();
         LL_num_expanded += path_planner.num_expanded;
@@ -606,7 +606,7 @@ bool PBS::generate_root_node()
     push_node(dummy_start);
     if (screen == 2)
     {
-        double runtime = (std::clock() - time) * 1.0 / CLOCKS_PER_SEC;
+        double runtime = (double)(std::clock() - time) * 1.0 / CLOCKS_PER_SEC;
         std::cout << "Done! (" << runtime << "s)" << std::endl;
     }
     return true;
@@ -627,16 +627,15 @@ PBSNode* PBS::pop_node()
 
 void PBS::update_best_node(PBSNode* node)
 {
-    if (node->earliest_collision > best_node->earliest_collision)
-        best_node = node;
-    else if (node->earliest_collision == best_node->earliest_collision &&
-            node->f_val < best_node->f_val)
+    if (node->earliest_collision > best_node->earliest_collision or
+        (node->earliest_collision == best_node->earliest_collision &&
+            node->f_val < best_node->f_val))
         best_node = node;
 }
 
 bool PBS::run(const vector<State>& starts,
                     const vector< vector<pair<int, int> > >& goal_locations,
-                    int time_limit)
+                    int _time_limit)
 {
     clear();
 
@@ -646,7 +645,7 @@ bool PBS::run(const vector<State>& starts,
     this->starts = starts;
     this->goal_locations = goal_locations;
     this->num_of_agents = starts.size();
-    this->time_limit = time_limit;
+    this->time_limit = _time_limit;
 
     solution_cost = -2;
     solution_found = false;
@@ -673,7 +672,7 @@ bool PBS::run(const vector<State>& starts,
     // start the loop
 	while (!dfs.empty() && !solution_found)
 	{
-		runtime = (std::clock() - start) * 1.0  / CLOCKS_PER_SEC;
+		runtime = (double)(std::clock() - start) * 1.0  / CLOCKS_PER_SEC;
         if (runtime > time_limit)
 		{  // timeout
 			solution_cost = -1;
@@ -704,42 +703,42 @@ bool PBS::run(const vector<State>& starts,
 			std::cout << "Expand Node " << curr->time_generated << " ( cost = " << curr->f_val << " , #conflicts = " <<
 			curr->num_of_collisions << " ) on conflict " << curr->conflict << std::endl;
 		PBSNode* n[2];
-        for (int i = 0; i < 2; i++)
-                n[i] = new PBSNode();
+        for (auto & i : n)
+                i = new PBSNode();
 	    resolve_conflict(curr->conflict, n[0], n[1]);
 
         // int loc = std::get<2>(*curr->conflict);
         vector<Path*> copy(paths);
-        for (int i = 0; i < 2; i++)
+        for (auto & i : n)
         {
-            bool sol = generate_child(n[i], curr);
+            bool sol = generate_child(i, curr);
             if (sol)
             {
                 HL_num_generated++;
-                n[i]->time_generated = HL_num_generated;
+                i->time_generated = HL_num_generated;
             }
             if (sol)
             {
                 if (screen == 2)
                 {
-                    std::cout << "Generate #" << n[i]->time_generated << " with "
-                              << n[i]->paths.size() << " new paths, "
-                              << n[i]->g_val - curr->g_val << " delta cost and "
-                              << n[i]->num_of_collisions << " conflicts " << std::endl;
+                    std::cout << "Generate #" << i->time_generated << " with "
+                              << i->paths.size() << " new paths, "
+                              << i->g_val - curr->g_val << " delta cost and "
+                              << i->num_of_collisions << " conflicts " << std::endl;
                 }
-                if (n[i]->f_val == min_f_val && n[i]->num_of_collisions == 0) //no conflicts
+                if (i->f_val == min_f_val && i->num_of_collisions == 0) //no conflicts
                 {// found a solution (and finish the while look)
                     solution_found = true;
-                    solution_cost = n[i]->g_val;
-                    best_node = n[i];
-                    allNodes_table.push_back(n[i]);
+                    solution_cost = i->g_val;
+                    best_node = i;
+                    allNodes_table.push_back(i);
                     break;
                 }
             }
 		    else
 		    {
-			    delete (n[i]);
-			    n[i] = nullptr;
+			    delete i;
+			    i = nullptr;
 		    }
 		    paths = copy;
         }
@@ -777,7 +776,7 @@ bool PBS::run(const vector<State>& starts,
 	}  // end of while loop
 
 
-	runtime = (std::clock() - start) * 1.0 / CLOCKS_PER_SEC;
+	runtime = (double)(std::clock() - start) * 1.0 / CLOCKS_PER_SEC;
     get_solution();
 	if (solution_found && !validate_solution())
 	{
@@ -788,11 +787,11 @@ bool PBS::run(const vector<State>& starts,
     min_sum_of_costs = 0;
     for (int i = 0; i < num_of_agents; i++)
     {
-        int start = starts[i].location;
+        int start_loc = starts[i].location;
         for (const auto& goal : goal_locations[i])
         {
-            min_sum_of_costs += G.heuristics.at(goal.first)[start];
-            start = goal.first;
+            min_sum_of_costs += G.heuristics.at(goal.first)[start_loc];
+            start_loc = goal.first;
         }
     }
 	if (screen > 0) // 1 or 2
@@ -818,8 +817,8 @@ PBS::PBS(const BasicGraph& G, SingleAgentSolver& path_planner) : MAPFSolver(G, p
 
 inline void PBS::release_closed_list()
 {
-	for (auto it = allNodes_table.begin(); it != allNodes_table.end(); it++)
-		delete *it;
+	for (auto & it : allNodes_table)
+		delete it;
 	allNodes_table.clear();
 }
 
@@ -840,8 +839,8 @@ bool PBS::validate_solution()
             find_conflicts(conflict, a1, a2);
             if (!conflict.empty())
             {
-                int a1, a2, loc1, loc2, t;
-                std::tie(a1, a2, loc1, loc2, t) = conflict.front();
+                int a1_, a2_, loc1, loc2, t;
+                std::tie(a1_, a2_, loc1, loc2, t) = conflict.front();
                 if (loc2 < 0)
                     std::cout << "Agents "  << a1 << " and " << a2 << " collides at " << loc1 <<
                     " at timestep " << t << std::endl;
@@ -862,7 +861,7 @@ void PBS::print_paths() const
 		if (paths[i] == nullptr)
             continue;
         std::cout << "Agent " << i << " (" << paths[i]->size() - 1 << "): ";
-		for (auto s : (*paths[i]))
+		for (const auto& s : (*paths[i]))
 			std::cout << s.location << "->";
 		std::cout << std::endl;
 	}
@@ -964,7 +963,7 @@ void PBS::save_results(const std::string &fileName, const std::string &instanceN
 	stats.close();
 }
 
-void PBS::print_conflicts(const PBSNode &curr) const
+void PBS::print_conflicts(const PBSNode &curr)
 {
 	for (auto c : curr.conflicts)
 	{
