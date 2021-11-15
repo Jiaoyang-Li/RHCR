@@ -70,7 +70,7 @@ void PBS::copy_conflicts(const list<Conflict>& conflicts,
 			copy.push_back(conflict);
 		}
 	}
-    runtime_copy_conflicts += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+    runtime_copy_conflicts += (double)(std::clock() - t) / CLOCKS_PER_SEC;
 }
 void PBS::copy_conflicts(const list<Conflict>& conflicts, list<Conflict>& copy, int excluded_agent)
 {
@@ -82,7 +82,7 @@ void PBS::copy_conflicts(const list<Conflict>& conflicts, list<Conflict>& copy, 
             copy.push_back(conflict);
         }
     }
-    runtime_copy_conflicts += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+    runtime_copy_conflicts += (double)(std::clock() - t) / CLOCKS_PER_SEC;
 }
 
 
@@ -143,7 +143,7 @@ void PBS::find_conflicts(list<Conflict>& conflicts, int a1, int a2)
 				if (loc == paths[a2]->at(i).location && G.types[loc] != "Magic")
 				{
 					conflicts.emplace_back(a1, a2, loc, -1, min(i, timestep)); // k-robust vertex conflict
-					runtime_detect_conflicts += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+					runtime_detect_conflicts += (double)(std::clock() - t) / CLOCKS_PER_SEC;
 					return;
 				}
 			}
@@ -155,14 +155,14 @@ void PBS::find_conflicts(list<Conflict>& conflicts, int a1, int a2)
 						 && loc2 == paths[a1]->at(timestep + 1).location)
 				{
 					conflicts.emplace_back(a1, a2, loc1, loc2, timestep + 1); // edge conflict
-					runtime_detect_conflicts += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+					runtime_detect_conflicts += (double)(std::clock() - t) / CLOCKS_PER_SEC;
 					return;
 				}
 			}
 
 		}
     }
-	runtime_detect_conflicts += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+	runtime_detect_conflicts += (double)(std::clock() - t) / CLOCKS_PER_SEC;
 }
 
 void PBS::find_conflicts(list<Conflict>& conflicts)
@@ -211,7 +211,7 @@ void PBS::remove_conflicts(list<Conflict>& conflicts, int excluded_agent)
 			++it;
 		}
     }
-    runtime_copy_conflicts += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+    runtime_copy_conflicts += (double)(std::clock() - t) / CLOCKS_PER_SEC;
 }
 
 void PBS::choose_conflict(PBSNode &node)
@@ -283,14 +283,14 @@ void PBS::choose_conflict(PBSNode &node)
                 if ((a1 == p.first && a2 == p.second) || (a1 == p.second && a2 == p.first))
                 {
                     node.conflict = conflict;
-                    runtime_choose_conflict += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+                    runtime_choose_conflict += (double)(std::clock() - t) / CLOCKS_PER_SEC;
                     return;
                 }
             }
         }
     }
 
-    runtime_choose_conflict += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+    runtime_choose_conflict += (double)(std::clock() - t) / CLOCKS_PER_SEC;
 }
 
 
@@ -322,15 +322,15 @@ bool PBS::find_path(PBSNode* node, int agent)
              agent, starts[agent].location);
     runtime_get_higher_priority_agents += node->priorities.runtime;
 
-    runtime_rt += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+    runtime_rt += (double)(std::clock() - t) / CLOCKS_PER_SEC;
 
     t = std::clock();
     path = path_planner.run(G, starts[agent], goal_locations[agent], rt);
-	runtime_plan_paths += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+	runtime_plan_paths += (double)(std::clock() - t) / CLOCKS_PER_SEC;
     path_cost = path_planner.path_cost;
     // t = std::clock();
     // rt.clear();
-    // runtime_rt += (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+    // runtime_rt += (double)(std::clock() - t) / CLOCKS_PER_SEC;
     LL_num_expanded += path_planner.num_expanded;
     LL_num_generated += path_planner.num_generated;
 
@@ -404,7 +404,7 @@ void PBS::find_replan_agents(PBSNode* node, const list<Conflict>& conflicts,
             continue;
         }
     }
-    runtime_find_replan_agents += (double)(std::clock() - t2) * 1.0 / CLOCKS_PER_SEC;
+    runtime_find_replan_agents += (double)(std::clock() - t2) / CLOCKS_PER_SEC;
 }
 
 
@@ -418,12 +418,12 @@ bool PBS::find_consistent_paths(PBSNode* node, int agent)
     find_replan_agents(node, node->conflicts, replan);
     /*clock_t t2 = clock();
     PathTable pt(paths, window, k_robust);
-    runtime_detect_conflicts += (std::clock() - t2) * 1.0 / CLOCKS_PER_SEC;*/
+    runtime_detect_conflicts += (double)(std::clock() - t2) / CLOCKS_PER_SEC;*/
     while (!replan.empty())
     {
         if (count > (int) node->paths.size() * 5)
         {
-            runtime_find_consistent_paths += (double)(std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+            runtime_find_consistent_paths += (double)(std::clock() - t) / CLOCKS_PER_SEC;
             return false;
         }
         int a = *replan.begin();
@@ -431,10 +431,10 @@ bool PBS::find_consistent_paths(PBSNode* node, int agent)
         count++;
         /*t2 = clock();
         pt.remove(paths[a], a);
-        runtime_detect_conflicts += (std::clock() - t2) * 1.0 / CLOCKS_PER_SEC;*/
+        runtime_detect_conflicts += (double)(std::clock() - t2) / CLOCKS_PER_SEC;*/
         if (!find_path(node, a))
         {
-            runtime_find_consistent_paths += (double)(std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+            runtime_find_consistent_paths += (double)(std::clock() - t) / CLOCKS_PER_SEC;
             return false;
         }
         remove_conflicts(node->conflicts, a);
@@ -442,12 +442,12 @@ bool PBS::find_consistent_paths(PBSNode* node, int agent)
         find_conflicts(new_conflicts, a);
         /*t2 = clock();
         std::list< std::shared_ptr<Conflict> > new_conflicts = pt.add(paths[a], a);
-        runtime_detect_conflicts += (std::clock() - t2) * 1.0 / CLOCKS_PER_SEC;*/
+        runtime_detect_conflicts += (double)(std::clock() - t2) / CLOCKS_PER_SEC;*/
         find_replan_agents(node, new_conflicts, replan);
 
         node->conflicts.splice(node->conflicts.end(), new_conflicts);
     }
-    runtime_find_consistent_paths += (double)(std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+    runtime_find_consistent_paths += (double)(std::clock() - t) / CLOCKS_PER_SEC;
     if (screen == 2)
         return validate_consistence(node->conflicts, node->priorities);
     return true;
@@ -509,7 +509,7 @@ bool PBS::generate_child(PBSNode* node, PBSNode* parent)
         clock_t t = clock();
         node->priorities.copy(node->parent->priorities);
         node->priorities.add(node->priority.first, node->priority.second);
-        runtime_copy_priorities += (double)(std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+        runtime_copy_priorities += (double)(std::clock() - t) / CLOCKS_PER_SEC;
         copy_conflicts(node->parent->conflicts, node->conflicts, -1); // copy all conflicts
         if (!find_consistent_paths(node, node->priority.first))
             return false;
@@ -570,11 +570,11 @@ bool PBS::generate_root_node()
 		rt.copy(initial_rt);
         rt.build(paths, initial_constraints, dummy_start->priorities.get_reachable_nodes(i), i, start_location);
         runtime_get_higher_priority_agents += dummy_start->priorities.runtime;
-        runtime_rt += (double)(std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+        runtime_rt += (double)(std::clock() - t) / CLOCKS_PER_SEC;
         vector< vector<double> > h_values(goal_locations[i].size());
         t = std::clock();
         path = path_planner.run(G, starts[i], goal_locations[i], rt);
-		runtime_plan_paths += (double)(std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+		runtime_plan_paths += (double)(std::clock() - t) / CLOCKS_PER_SEC;
         path_cost = path_planner.path_cost;
         rt.clear();
         LL_num_expanded += path_planner.num_expanded;
@@ -606,7 +606,7 @@ bool PBS::generate_root_node()
     push_node(dummy_start);
     if (screen == 2)
     {
-        double runtime = (double)(std::clock() - time) * 1.0 / CLOCKS_PER_SEC;
+        double runtime = (double)(std::clock() - time) / CLOCKS_PER_SEC;
         std::cout << "Done! (" << runtime << "s)" << std::endl;
     }
     return true;
@@ -672,7 +672,7 @@ bool PBS::run(const vector<State>& starts,
     // start the loop
 	while (!dfs.empty() && !solution_found)
 	{
-		runtime = (double)(std::clock() - start) * 1.0  / CLOCKS_PER_SEC;
+		runtime = (double)(std::clock() - start)  / CLOCKS_PER_SEC;
         if (runtime > time_limit)
 		{  // timeout
 			solution_cost = -1;
@@ -776,7 +776,7 @@ bool PBS::run(const vector<State>& starts,
 	}  // end of while loop
 
 
-	runtime = (double)(std::clock() - start) * 1.0 / CLOCKS_PER_SEC;
+	runtime = (double)(std::clock() - start) / CLOCKS_PER_SEC;
     get_solution();
 	if (solution_found && !validate_solution())
 	{

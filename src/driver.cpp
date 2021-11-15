@@ -107,7 +107,7 @@ int main(int argc, char** argv)
 		("screen,s", po::value<int>()->default_value(1), "screen option (0: none; 1: results; 2:all)")
 		("solver", po::value<string>()->default_value("PBS"), "solver (LRA, PBS, WHCA, ECBS)")
 		("id", po::value<bool>()->default_value(false), "independence detection")
-		("single_agent_solver", po::value<string>()->default_value("ASTAR"), "single-agent solver (ASTAR, SIPP)")
+		("single_agent_solver", po::value<string>()->default_value("SIPP"), "single-agent solver (ASTAR, SIPP)")
 		("lazyP", po::value<bool>()->default_value(false), "use lazy priority")
 		("simulation_time", po::value<int>()->default_value(5000), "run simulation")
 		("simulation_window", po::value<int>()->default_value(5), "call the planner every simulation_window timesteps")
@@ -205,7 +205,7 @@ int main(int argc, char** argv)
 		G.preprocessing(vm["task"].as<std::string>(), system.consider_rotation);
 		system.load_task_assignments(vm["task"].as<std::string>());
 		system.simulate();
-		double runtime = (clock() - start_time) * 1.0 / CLOCKS_PER_SEC;
+		double runtime = (double)(clock() - start_time)/ CLOCKS_PER_SEC;
 		cout << "Overall runtime:			" << runtime << " seconds." << endl;
 		// cout << "	Reading from file:		" << G.loading_time + system.loading_time << " seconds." << endl;
 		// cout << "	Preprocessing:			" << G.preprocessing_time << " seconds." << endl;

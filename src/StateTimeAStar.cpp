@@ -89,11 +89,11 @@ Path StateTimeAStar::run(const BasicGraph& G, const State& start,
 			releaseClosedListNodes();
 			open_list.clear();
 			focal_list.clear();
-			runtime = (std::clock() - t) * 1.0 / CLOCKS_PER_SEC;
+			runtime = (double)(std::clock() - t) / CLOCKS_PER_SEC;
 			return path;
 		}
 
-        for (auto next_state: G.get_neighbors(curr->state))
+        for (const auto& next_state: G.get_neighbors(curr->state))
         {
             if (!rt.isConstrained(curr->state.location, next_state.location, next_state.timestep))
             {
@@ -181,7 +181,7 @@ Path StateTimeAStar::run(const BasicGraph& G, const State& start,
         }  // end for loop that generates successors
 
         // update FOCAL if min f-val increased
-        if (open_list.size() == 0)  // in case OPEN is empty, no path found
+        if (open_list.empty())  // in case OPEN is empty, no path found
             break;
         StateTimeAStarNode* open_head = open_list.top();
         if (open_head->getFVal() > min_f_val)
@@ -306,7 +306,7 @@ void StateTimeAStar::findTrajectory(const BasicGraph& G,
 
 inline void StateTimeAStar::releaseClosedListNodes()
 {
-    for (auto it = allNodes_table.begin(); it != allNodes_table.end(); it++)
-        delete (*it);
+    for (auto it : allNodes_table)
+        delete it;
     allNodes_table.clear();
 }
