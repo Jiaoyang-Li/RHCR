@@ -96,6 +96,23 @@ int ReservationTable::getHoldingTimeFromCT(int location) const
 	return t;
 }
 
+set<int> ReservationTable::getConstrainedTimesteps(int location) const
+{
+    set<int> rst;
+    const auto& it = ct.find(location);
+    if (it == ct.end())
+        return rst;
+
+    for (auto time_range : it->second)
+    {
+        if (time_range.second == INTERVAL_MAX) // skip goal constraint
+            continue;
+        for (auto t = time_range.first; t < time_range.second; t++)
+            rst.insert(t);
+    }
+    return rst;
+}
+
 void ReservationTable::insertConstraint2SIT(int location, int t_min, int t_max)
 {
     if (sit.find(location) == sit.end())

@@ -16,6 +16,7 @@ using boost::heap::compare;
 using boost::unordered_set;
 using boost::unordered_map;
 
+using std::set;
 using std::vector;
 using std::tuple;
 using std::deque;

@@ -40,6 +40,7 @@ public:
 	bool isConstrained(int curr_id, int next_id, int next_timestep) const;
 	bool isConflicting(int curr_id, int next_id, int next_timestep) const;
 	int getHoldingTimeFromCT(int location) const;
+    set<int> getConstrainedTimesteps(int location) const;
 
 	ReservationTable(const BasicGraph& G): G(G) {}
 private:

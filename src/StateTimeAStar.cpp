@@ -12,8 +12,12 @@ Path StateTimeAStar::updatePath(const StateTimeAStarNode* goal)
     const StateTimeAStarNode* curr = goal;
     for(int t = goal->state.timestep; t >= 0; t--)
     {
+        if (curr->state.timestep > t)
+        {
+            curr = curr->parent;
+            assert (curr->state.timestep <= t);
+        }
         path[t] = curr->state;
-        curr = curr->parent;
     }
     return path;
 }
@@ -182,19 +186,43 @@ Path StateTimeAStar::run(const BasicGraph& G, const State& start,
 
         // update FOCAL if min f-val increased
         if (open_list.empty())  // in case OPEN is empty, no path found
-            break;
-        StateTimeAStarNode* open_head = open_list.top();
-        if (open_head->getFVal() > min_f_val)
         {
-            double new_min_f_val = open_head->getFVal();
-            double new_lower_bound = std::max(lower_bound,  new_min_f_val);
-            for (StateTimeAStarNode* n : open_list)
+            // This is correct only when k_robust <= 1. Otherwise, agents might not be able to
+            // wait at its start locations due to initial constraints caused by the previous actions
+            // of other agents.
+            auto timesteps = rt.getConstrainedTimesteps(start.location);
+            auto wait_cost = G.get_weight(start.location, start.location);
+            auto h = compute_h_value(G, start.location, 0, goal_location);
+            for (int t : timesteps)
             {
-                if (n->getFVal() > lower_bound && n->getFVal() <= new_lower_bound)
-                    n->focal_handle = focal_list.push(n);
+                State s(start.location, t, start.orientation);
+                auto node2 = new StateTimeAStarNode(s, t * wait_cost, h, root, 0);
+                num_generated++;
+                node2->open_handle = open_list.push(node2);
+                node2->in_openlist = true;
+                allNodes_table.insert(node2);
             }
-            min_f_val = new_min_f_val;
-            lower_bound = new_lower_bound;
+            min_f_val = open_list.top()->getFVal();
+            lower_bound = min_f_val;
+            open_list.top()->focal_handle = focal_list.push(open_list.top());
+        }
+        else
+        {
+            auto open_head = open_list.top();
+            assert(!focal_list.empty() or open_head->getFVal() > min_f_val);
+            if (open_head->getFVal() > min_f_val)
+            {
+                double new_min_f_val = open_head->getFVal();
+                double new_lower_bound = std::max(lower_bound,  new_min_f_val);
+                for (StateTimeAStarNode* n : open_list)
+                {
+                    if (n->getFVal() > lower_bound && n->getFVal() <= new_lower_bound)
+                        n->focal_handle = focal_list.push(n);
+                }
+                min_f_val = new_min_f_val;
+                lower_bound = new_lower_bound;
+            }
+            assert(!focal_list.empty());
         }
     }  // end while loop
 
