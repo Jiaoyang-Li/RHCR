@@ -1,6 +1,6 @@
 # RHCR
 
-Rolling-Horizon Collision Resolution (WHCR) is an effifent algorithm for solving lifelong Multi-Agent Path Finding (MAPF) where we are aksed to plan collision-free paths for a large number of agents that are constanly engaged with new goal locations. WHCR calls a Windowed MAPF solver every h timesteps that resolves collisions only for the next w timesteps (w >= h). More details can be found in our extended abstract at AAMAS 2020 [1] or our full paper at AAAI 2021 [2].
+Rolling-Horizon Collision Resolution (WHCR) is an efficient algorithm for solving lifelong Multi-Agent Path Finding (MAPF) where we are asked to plan collision-free paths for a large number of agents that are constanly engaged with new goal locations. WHCR calls a Windowed MAPF solver every h timesteps that resolves collisions only for the next w timesteps (w >= h). More details can be found in our extended abstract at AAMAS 2020 [1] or our full paper at AAAI 2021 [2].
 
 The code requires the external library BOOST (https://www.boost.org/).    
 An easy way to install BOOST in Linux:
