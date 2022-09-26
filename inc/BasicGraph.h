@@ -10,7 +10,7 @@ class BasicGraph
 public:
     vector<std::string> types;
     unordered_map<int, vector<double>> heuristics;
-
+    virtual ~BasicGraph()= default;
     string map_name;
 	virtual bool load_map(string fname) = 0;
     list<State> get_neighbors(const State& v) const;
