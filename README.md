@@ -18,6 +18,11 @@ Then, you are able to run the code:
 ```
 ./lifelong -m maps/sorting_map.grid -k 800 --scenario=SORTING --simulation_window=5 --planning_window=10 --solver=PBS --seed=0
 ```
+for running RHCR with PBS on the sorting center map; and
+```
+./lifelong -m maps/kiva.map -k 100 --scenario=KIVA --simulation_window=1 --solver=ECBS --suboptimal_bound=1.5 --dummy_path=1 --seed=0
+```
+for running ECBS(w=1.5) with dummy paths on the kiva map.
 
 - m: the map file 
 - k: the number of agents
