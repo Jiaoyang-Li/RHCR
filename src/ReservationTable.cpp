@@ -1,6 +1,6 @@
 #include "ReservationTable.h"
 
-// update SIT at the gvien location
+// update SIT at the given location
 void ReservationTable::updateSIT(size_t location)
 {
 	if (sit.find(location) == sit.end())
@@ -523,6 +523,18 @@ void ReservationTable::print() const
         {
             cout << "[" << std::get<0>(interval) << "," << std::get<1>(interval) << "],";
         }
+    }
+    cout << endl;
+}
+
+void ReservationTable::printCT(size_t location) const
+{
+    cout << "loc=" << location << ":";
+    const auto it = ct.find(location);
+    if (it != ct.end())
+    {
+        for (const auto & interval : ct.at(location))
+        cout << "[" << std::get<0>(interval) << "," << std::get<1>(interval) << "],";
     }
     cout << endl;
 }

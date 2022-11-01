@@ -446,7 +446,6 @@ bool ECBS::generate_root_node()
 		rt.copy(initial_rt);
         rt.build(paths, initial_constraints, list<Constraint>(), i);
         Path path = path_planner.run(G, starts[i], goal_locations[i], rt);
-
         /*if (path.empty() && hold_endpoints && goal_locations[i].size() == 1)
         {
 			goal_locations[i][0] = starts[i].location;
@@ -728,7 +727,7 @@ void ECBS::resolve_conflict(const Conflict& conflict, ECBSNode* n1, ECBSNode* n2
 
 
 ECBS::ECBS(const BasicGraph& G, SingleAgentSolver& path_planner):
-        MAPFSolver(G, path_planner), disjoint_splitting(false), initial_rt(G), rt(G) {}
+        MAPFSolver(G, path_planner), disjoint_splitting(false) {}
 
 
 void ECBS::release_closed_list()

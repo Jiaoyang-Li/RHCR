@@ -28,6 +28,7 @@ public:
                const list< Constraint >& constraints, int current_agent);
 	void insertPath2CT(const Path& path); // insert the path to the constraint table
 	void print() const;
+    void printCT(size_t location) const;
 
     // functions  for SIPP
     list<Interval> getSafeIntervals(int location, int lower_bound, int upper_bound);

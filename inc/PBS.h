@@ -36,8 +36,6 @@ public:
 	double min_f_val = 0;
 
 
-	ReservationTable initial_rt;
-
     list< tuple<int, int, int> > initial_constraints; // <agent, location, timestep>
     // only this agent can stay in this location during before this timestep.
 
@@ -86,10 +84,6 @@ private:
     unordered_map<int, double> travel_times;
 
     unordered_set<pair<int, int>> nogood;
-
-    vector<vector<bool> > cat; // conflict avoidance table
-    vector<unordered_set< pair<int, int> > > constraint_table;
-    ReservationTable rt;
 
     // SingleAgentICBS astar;
 

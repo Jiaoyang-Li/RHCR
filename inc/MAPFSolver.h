@@ -53,13 +53,12 @@ public:
     int num_of_agents;
 	int time_limit;
 
+    // validate
+    bool validate_solution();
 
-
+protected:
     vector<vector<bool> > cat; // conflict avoidance table
     vector<unordered_set< pair<int, int> > > constraint_table;
     ReservationTable rt;
-
-	// validate
-	bool validate_solution();
 };
 

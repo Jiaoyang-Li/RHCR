@@ -23,7 +23,6 @@ public:
     uint64_t LL_num_generated;
 
     list< tuple<int, int, int> > initial_constraints; // <agent, location, timestep>
-	ReservationTable initial_rt;
     // only this agent can stay in this location during before this timestep.
 
 
@@ -72,11 +71,6 @@ private:
     // unordered_map<int, double> travel_times;
 
     unordered_set<pair<int, int>> nogood;
-
-    //vector<vector<bool> > cat; // conflict avoidance table
-    //vector<unordered_set< pair<int, int> > > constraint_table;
-    ReservationTable rt;
-
 
     bool generate_root_node();
     void push_node(ECBSNode* node);

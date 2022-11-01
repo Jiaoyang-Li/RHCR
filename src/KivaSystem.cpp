@@ -69,6 +69,7 @@ void KivaSystem::initialize_goal_locations()
 
 void KivaSystem::update_goal_locations()
 {
+    new_agents.clear();
 	if (hold_endpoints)
 	{
 		unordered_map<int, int> held_locations; // <location, agent id>
@@ -86,7 +87,7 @@ void KivaSystem::update_goal_locations()
 				held_endpoints.insert(next);
 			}
 			if (paths[k].back().location == goal_locations[k].back().first &&  // agent already has paths to its goal location
-				paths[k].back().timestep >= goal_locations[k].back().second) // after its relase time
+				paths[k].back().timestep >= goal_locations[k].back().second) // after its release time
 			{
 				int agent = k;
 				int loc = goal_locations[k].back().first;
