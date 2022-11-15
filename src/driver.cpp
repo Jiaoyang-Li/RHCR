@@ -143,6 +143,12 @@ int main(int argc, char** argv)
     // check params
     if (vm["hold_endpoints"].as<bool>() or vm["dummy_paths"].as<bool>())
     {
+        if (vm["prioritize_start"].as<bool>())
+        {
+            std::cerr << "Please add --prioritize_start=false to the command since prioritize_start does not work with "
+                         "hold endpoints or dummy paths." << endl;
+            exit(-1);
+        }
         if (vm["hold_endpoints"].as<bool>() and vm["dummy_paths"].as<bool>())
         {
             std::cerr << "Hold endpoints and dummy paths cannot be used simultaneously" << endl;
@@ -159,7 +165,7 @@ int main(int argc, char** argv)
             exit(-1);
         }
     }
-    
+
     // make dictionary
 	boost::filesystem::path dir(vm["output"].as<std::string>() +"/");
 	boost::filesystem::create_directories(dir);
