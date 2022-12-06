@@ -83,6 +83,7 @@ public:
 protected:
 	bool solve_by_WHCA(vector<Path>& planned_paths,
 		const vector<State>& new_starts, const vector< vector<pair<int, int> > >& new_goal_locations);
+    bool LRA_called = false;
 
 private:
 	const BasicGraph& G;

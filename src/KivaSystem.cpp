@@ -69,7 +69,8 @@ void KivaSystem::initialize_goal_locations()
 
 void KivaSystem::update_goal_locations()
 {
-    new_agents.clear();
+    if (!LRA_called)
+        new_agents.clear();
 	if (hold_endpoints)
 	{
 		unordered_map<int, int> held_locations; // <location, agent id>

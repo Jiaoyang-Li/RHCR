@@ -566,6 +566,7 @@ void BasicSystem::update_travel_times(unordered_map<int, double>& travel_times)
 
 void BasicSystem::solve()
 {
+    LRA_called = false;
 	LRAStar lra(G, solver.path_planner);
 	lra.simulation_window = simulation_window;
 	lra.k_robust = k_robust;
@@ -629,7 +630,11 @@ void BasicSystem::solve()
 			 }
 			 if (!new_agents.empty())
 			 {
-				 bool sol = solver.run(new_starts, new_goal_locations, time_limit);
+				 bool sol;
+                if (timestep == 0)
+                    sol = solver.run(new_starts, new_goal_locations, 10 * time_limit);
+                else
+                    sol = solver.run(new_starts, new_goal_locations, time_limit);
 				 if (sol)
 				 {
 					 auto pt = solver.solution.begin();
@@ -657,6 +662,7 @@ void BasicSystem::solve()
 							planned_paths[i] = *pt;
 							++pt;
 						}
+                        LRA_called = true;
 					}
 				 }
 			 }
@@ -690,13 +696,20 @@ bool BasicSystem::solve_by_WHCA(vector<Path>& planned_paths,
 	const vector<State>& new_starts, const vector< vector<pair<int, int> > >& new_goal_locations)
 {
 	WHCAStar whca(G, solver.path_planner);
+    whca.k_robust = k_robust;
+    whca.window = INT_MAX;
+    whca.hold_endpoints = hold_endpoints || useDummyPaths;
+    whca.screen = screen;
 	whca.initial_rt.hold_endpoints = true;
 	whca.initial_rt.map_size = G.size();
 	whca.initial_rt.k_robust = k_robust;
 	whca.initial_rt.window = INT_MAX;
 	whca.initial_rt.copy(solver.initial_rt);
 	bool sol = false;
-	sol = whca.run(new_starts, new_goal_locations, time_limit);
+    if (timestep == 0)
+	    sol = whca.run(new_starts, new_goal_locations, 10 * time_limit);
+    else
+        sol = whca.run(new_starts, new_goal_locations, time_limit);
 	whca.save_results(outfile + "/solver.csv", std::to_string(timestep) + ","
 		+ std::to_string(num_of_drives) + "," + std::to_string(seed));
 	if (sol)

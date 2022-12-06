@@ -328,7 +328,6 @@ void ReservationTable::build(const vector<Path>& paths,
 {
     clock_t t = std::clock();
     // add hard constraints
-    vector<bool> soft(num_of_agents, true);
     for (int i = 0; i < (int)paths.size(); i++)
     {
 		if (i == current_agent)
