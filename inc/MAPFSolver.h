@@ -55,7 +55,7 @@ public:
 
     // validate
     bool validate_solution();
-
+    void print_solution() const;
 protected:
     vector<vector<bool> > cat; // conflict avoidance table
     vector<unordered_set< pair<int, int> > > constraint_table;

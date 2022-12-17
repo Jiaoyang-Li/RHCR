@@ -615,14 +615,14 @@ void BasicSystem::solve()
 			 auto p = new_agents.begin();
 			 for (int i = 0; i < num_of_drives; i++)
 			 {
+                 planned_paths[i].resize(paths[i].size() - timestep);
+                 for (int t = 0; t < (int)planned_paths[i].size(); t++)
+                 {
+                     planned_paths[i][t] = paths[i][timestep + t];
+                     planned_paths[i][t].timestep = t;
+                 }
 				 if (p == new_agents.end() || *p != i)
 				 {
-					 planned_paths[i].resize(paths[i].size() - timestep);
-					 for (int t = 0; t < (int)planned_paths[i].size(); t++)
-					 {
-						 planned_paths[i][t] = paths[i][timestep + t];
-						 planned_paths[i][t].timestep = t;
-					 }
 					 solver.initial_rt.insertPath2CT(planned_paths[i]);
 				 }
 				 else
@@ -635,7 +635,7 @@ void BasicSystem::solve()
                     sol = solver.run(new_starts, new_goal_locations, 10 * time_limit);
                 else
                     sol = solver.run(new_starts, new_goal_locations, time_limit);
-				 if (sol)
+                if (sol)
 				 {
 					 auto pt = solver.solution.begin();
 					 for (int i : new_agents)
@@ -651,19 +651,8 @@ void BasicSystem::solve()
 				 }
 				 else
 				 {
-					 if (timestep == 0)
-							sol = solve_by_WHCA(planned_paths, new_starts, new_goal_locations);
-					if (!sol)
-					{
-						lra.resolve_conflicts(solver.solution);
-						auto pt = lra.solution.begin();
-						for (int i : new_agents)
-						{
-							planned_paths[i] = *pt;
-							++pt;
-						}
-                        LRA_called = true;
-					}
+					 sol = solve_by_WHCA(planned_paths, new_starts, new_goal_locations);
+                     assert(sol);
 				 }
 			 }
 			 // lra.resolve_conflicts(planned_paths, k_robust);
@@ -705,22 +694,42 @@ bool BasicSystem::solve_by_WHCA(vector<Path>& planned_paths,
 	whca.initial_rt.k_robust = k_robust;
 	whca.initial_rt.window = INT_MAX;
 	whca.initial_rt.copy(solver.initial_rt);
+    whca.initial_solution.resize(new_starts.size());
+    if (whca.hold_endpoints)
+    {
+        if (timestep == 0)
+        {
+            for (int i = 0; i < (int)new_starts.size(); i++)
+                whca.initial_solution[i].emplace_back(starts[i]); // hold initial location
+        }
+        else
+        {
+            whca.initial_solution.clear();
+            for (auto agent : new_agents)
+                whca.initial_solution.emplace_back(planned_paths[agent]); // hold old paths
+        }
+    }
 	bool sol = false;
     if (timestep == 0)
-	    sol = whca.run(new_starts, new_goal_locations, 10 * time_limit);
+    {
+        sol = whca.run(new_starts, new_goal_locations, 10 * time_limit);
+    }
     else
+    {
+
         sol = whca.run(new_starts, new_goal_locations, time_limit);
+    }
 	whca.save_results(outfile + "/solver.csv", std::to_string(timestep) + ","
 		+ std::to_string(num_of_drives) + "," + std::to_string(seed));
-	if (sol)
-	{
-		auto pt = whca.solution.begin();
-		for (int i : new_agents)
-		{
-			planned_paths[i] = *pt;
-			++pt;
-		}
-	}
+    if (sol)
+    {
+        auto pt = whca.solution.begin();
+        for (int i : new_agents)
+        {
+            planned_paths[i] = *pt;
+            ++pt;
+        }
+    }
 	whca.clear();
 	return sol;
 }

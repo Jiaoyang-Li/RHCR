@@ -37,3 +37,17 @@ bool MAPFSolver::validate_solution()
 	}
 	return true;
 }
+
+
+void MAPFSolver::print_solution() const
+{
+    for (int i = 0; i < num_of_agents; i++)
+    {
+        cout << "Agent " << i << ":\t";
+        for (const auto & loc : solution[i])
+        {
+            cout << loc.location << ",";
+        }
+        cout << endl;
+    }
+}

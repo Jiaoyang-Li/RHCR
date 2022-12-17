@@ -39,14 +39,8 @@ bool WHCAStar::run(const vector<State>& starts,
         std::random_shuffle(priorities.begin(), priorities.end());
 
         solution_cost = 0;
-        solution.clear();
-		solution.resize(num_of_agents);
+        solution = initial_solution;
         bool succ = true;
-		if (hold_endpoints)
-		{
-			for (int i = 0; i < num_of_agents; i++)
-				solution[i].emplace_back(starts[i]);
-		}
         for (int i : priorities)
         {
 			rt.copy(initial_rt);
@@ -93,7 +87,6 @@ bool WHCAStar::run(const vector<State>& starts,
     print_results();
     return false;
 }
-
 
 void WHCAStar::print_results() const
 {
