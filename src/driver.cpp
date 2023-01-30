@@ -61,8 +61,11 @@ MAPFSolver* set_solver(const BasicGraph& G, const boost::program_options::variab
 	{
 		PBS* pbs = new PBS(G, *path_planner);
 		pbs->lazyPriority = vm["lazyP"].as<bool>();
-		pbs->prioritize_start = vm["prioritize_start"].as<bool>();
-		pbs->setRT(vm["CAT"].as<bool>(), vm["prioritize_start"].as<bool>());
+        auto prioritize_start = vm["prioritize_start"].as<bool>()
+        if (vm["hold_endpoints"].as<bool>() or vm["dummy_paths"].as<bool>())
+            prioritize_start = false;
+        pbs->prioritize_start = prioritize_start;
+        pbs->setRT(vm["CAT"].as<bool>(), prioritize_start);
 		mapf_solver = pbs;
 	}
 	else if (solver_name == "WHCA")
@@ -143,12 +146,6 @@ int main(int argc, char** argv)
     // check params
     if (vm["hold_endpoints"].as<bool>() or vm["dummy_paths"].as<bool>())
     {
-        if (vm["prioritize_start"].as<bool>())
-        {
-            std::cerr << "Please add --prioritize_start=false to the command since prioritize_start does not work with "
-                         "hold endpoints or dummy paths." << endl;
-            exit(-1);
-        }
         if (vm["hold_endpoints"].as<bool>() and vm["dummy_paths"].as<bool>())
         {
             std::cerr << "Hold endpoints and dummy paths cannot be used simultaneously" << endl;
