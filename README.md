@@ -1,4 +1,6 @@
 # RHCR
+![test_ubuntu](https://github.com/Jiaoyang-Li/RHCR/actions/workflows/test_ubuntu.yml/badge.svg)
+![test_macos](https://github.com/Jiaoyang-Li/RHCR/actions/workflows/test_macos.yml/badge.svg)
 
 Rolling-Horizon Collision Resolution (RHCR) is an efficient algorithm for solving lifelong Multi-Agent Path Finding (MAPF) where we are aksed to plan collision-free paths for a large number of agents that are constanly engaged with new goal locations. RHCR calls a Windowed MAPF solver every h timesteps that resolves collisions only for the next w timesteps (w >= h). More details can be found in our extended abstract at AAMAS 2020 [1] and our full paper at AAAI 2021 [2].
 
