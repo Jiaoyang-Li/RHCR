@@ -7,6 +7,7 @@
 #include <cfloat>
 #include <ctime>
 #include <fstream>
+#include <set>
 #include <boost/heap/fibonacci_heap.hpp>
 #include <boost/unordered_set.hpp>
 #include <boost/unordered_map.hpp>
