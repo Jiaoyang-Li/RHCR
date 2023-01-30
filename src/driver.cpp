@@ -61,7 +61,7 @@ MAPFSolver* set_solver(const BasicGraph& G, const boost::program_options::variab
 	{
 		PBS* pbs = new PBS(G, *path_planner);
 		pbs->lazyPriority = vm["lazyP"].as<bool>();
-        auto prioritize_start = vm["prioritize_start"].as<bool>()
+        auto prioritize_start = vm["prioritize_start"].as<bool>();
         if (vm["hold_endpoints"].as<bool>() or vm["dummy_paths"].as<bool>())
             prioritize_start = false;
         pbs->prioritize_start = prioritize_start;
