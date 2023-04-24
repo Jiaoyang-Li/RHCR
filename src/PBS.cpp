@@ -603,6 +603,8 @@ bool PBS::generate_root_node()
     min_f_val = dummy_start->f_val;
     // focal_list_threshold = min_f_val * focal_w;
     best_node = dummy_start;
+    HL_num_generated++;
+    dummy_start->time_generated = HL_num_generated;
     push_node(dummy_start);
     if (screen == 2)
     {

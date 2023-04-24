@@ -33,7 +33,6 @@ private:
     unordered_map<int, int> curr_locations; // key = location, value = agent_id
     unordered_map<int, int> next_locations; // key = location, value = agent_id
     // vector<list<pair<int, int> > > trajectories;
-    int num_of_agents;
 
     void print_results() const;
     void wait_command(int agent, int timestep,

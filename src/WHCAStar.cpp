@@ -1,6 +1,6 @@
 #include "WHCAStar.h"
 
-WHCAStar::WHCAStar(const BasicGraph &G, SingleAgentSolver& path_planner) : MAPFSolver(G, path_planner), initial_rt(G){}
+WHCAStar::WHCAStar(const BasicGraph &G, SingleAgentSolver& path_planner) : MAPFSolver(G, path_planner) {}
 
 
 bool WHCAStar::run(const vector<State>& starts,

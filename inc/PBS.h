@@ -36,9 +36,6 @@ public:
 	double min_f_val = 0;
 
 
-    list< tuple<int, int, int> > initial_constraints; // <agent, location, timestep>
-    // only this agent can stay in this location during before this timestep.
-
 	// Runs the algorithm until the problem is solved or time is exhausted 
     bool run(const vector<State>& starts,
             const vector< vector<pair<int, int> > >& goal_locations, // an ordered list of pairs of <location, release time>
@@ -75,14 +72,7 @@ private:
 
     std::clock_t start = 0;
 
-    int num_of_agents = 0;
-
-    double min_sum_of_costs = 0;
-
-	int time_limit = 0;
 	// double focal_w = 1.0;
-    unordered_map<int, double> travel_times;
-
     unordered_set<pair<int, int>> nogood;
 
     // SingleAgentICBS astar;

@@ -22,9 +22,6 @@ public:
     uint64_t LL_num_expanded;
     uint64_t LL_num_generated;
 
-    list< tuple<int, int, int> > initial_constraints; // <agent, location, timestep>
-    // only this agent can stay in this location during before this timestep.
-
 
     // Runs the algorithm until the problem is solved or time is exhausted
     bool run(const vector<State>& starts,
@@ -62,11 +59,9 @@ private:
 
     std::clock_t start;
 
-    int num_of_agents;
     double min_f_val;
     double focal_threshold;
 
-    int time_limit;
     // double focal_w = 1.0;
     // unordered_map<int, double> travel_times;
 

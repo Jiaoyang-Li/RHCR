@@ -23,9 +23,9 @@ public:
 	// initial data
 	ReservationTable initial_rt;
 	vector<Path> initial_paths;
-    list< tuple<int, int, int> > initial_constraints; // <agent, location, timestep>
+    list< tuple<int, int, int> > initial_constraints; // <agent, location, timestep>:
+    // only this agent can stay in this location before this timestep.
 	list<const Path*> initial_soft_path_constraints; // the paths that all agents try to avoid
-    // only this agent can stay in this location during before this timestep.
 	unordered_map<int, double> travel_times;
 
 
