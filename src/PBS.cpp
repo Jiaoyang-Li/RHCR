@@ -23,7 +23,6 @@ void PBS::clear()
     LL_num_generated = 0;
     solution_found = false;
     solution_cost = -2;
-    min_f_val = -1;
     // focal_list_threshold = -1;
     avg_path_length = -1;
     paths.clear();
@@ -600,7 +599,6 @@ bool PBS::generate_root_node()
 
 	dummy_start->f_val = dummy_start->g_val;
     dummy_start->num_of_collisions = dummy_start->conflicts.size();
-    min_f_val = dummy_start->f_val;
     // focal_list_threshold = min_f_val * focal_w;
     best_node = dummy_start;
     HL_num_generated++;
@@ -728,7 +726,7 @@ bool PBS::run(const vector<State>& starts,
                               << i->g_val - curr->g_val << " delta cost and "
                               << i->num_of_collisions << " conflicts " << std::endl;
                 }
-                if (i->f_val == min_f_val && i->num_of_collisions == 0) //no conflicts
+                if (i->num_of_collisions == 0) //no conflicts
                 {// found a solution (and finish the while look)
                     solution_found = true;
                     solution_cost = i->g_val;

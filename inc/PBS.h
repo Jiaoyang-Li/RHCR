@@ -32,10 +32,6 @@ public:
 	uint64_t LL_num_expanded = 0;
 	uint64_t LL_num_generated = 0;
 
-
-	double min_f_val = 0;
-
-
 	// Runs the algorithm until the problem is solved or time is exhausted 
     bool run(const vector<State>& starts,
             const vector< vector<pair<int, int> > >& goal_locations, // an ordered list of pairs of <location, release time>
